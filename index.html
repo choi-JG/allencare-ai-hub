@@ -2038,11 +2038,11 @@ async function likePost(postId, currentCount) {
   const btn = document.getElementById(`like-btn-${postId}`);
   if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
 
-  const newCount = Number(currentCount) + 1;
-  const { error } = await sb.from('posts').update({ likes: newCount }).eq('id', postId);
+  const { error } = await sb.rpc('increment_post_likes', { post_id: postId });
 
   if (!error) {
     markLiked(postId);
+    const newCount = Number(currentCount) + 1;
     const countEl = document.getElementById(`like-count-${postId}`);
     if (countEl) countEl.textContent = newCount;
     const p = allPosts.find(p => String(p.id) === String(postId));
