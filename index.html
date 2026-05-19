@@ -340,10 +340,10 @@
         <h1 style="font-size:44px;font-weight:600;color:#ffffff;line-height:1.1;letter-spacing:-0.28px;margin-bottom:20px;">
           AI, 어렵지 않습니다<br>함께 배우고 나눠요
         </h1>
-        <p style="font-size:20px;font-weight:300;color:#94a3b8;line-height:1.5;margin-bottom:36px;max-width:520px;">
-          임직원이 직접 발견한 AI 활용법을 공유하는 내부 지식 허브입니다.
-          도구 소개부터 실무 사례까지 — 검색하고, 읽고, 나눠주세요.
-        </p>
+        <div style="font-size:20px;font-weight:300;color:#94a3b8;line-height:1.6;margin-bottom:36px;max-width:520px;">
+          <div>임직원이 직접 발견한 AI 활용법을 공유하는 내부 지식 허브입니다.</div>
+          <div>도구 소개부터 실무 사례까지 — 검색하고, 읽고, 나눠주세요.</div>
+        </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <button onclick="navigate('tools')" class="btn-primary">AI 도구 둘러보기</button>
           <button onclick="navigate('community')" style="background:transparent;color:#60a5fa;border:1px solid rgba(96,165,250,0.4);border-radius:9999px;padding:10px 22px;font-size:17px;font-weight:400;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(96,165,250,0.7)'" onmouseout="this.style.borderColor='rgba(96,165,250,0.4)'">커뮤니티 보기</button>
@@ -362,18 +362,18 @@
         </div>
         <div style="width:1px;height:40px;background:#e2e8f0;"></div>
         <div>
-          <div style="font-size:28px;font-weight:600;color:#2552B5;letter-spacing:-0.28px;">24개</div>
+          <div id="stat-cases" style="font-size:28px;font-weight:600;color:#2552B5;letter-spacing:-0.28px;">—</div>
           <div style="font-size:14px;color:#64748b;margin-top:4px;letter-spacing:-0.224px;">활용 사례</div>
         </div>
         <div style="width:1px;height:40px;background:#e2e8f0;"></div>
         <div>
-          <div style="font-size:28px;font-weight:600;color:#2552B5;letter-spacing:-0.28px;">48명</div>
+          <div id="stat-members" style="font-size:28px;font-weight:600;color:#2552B5;letter-spacing:-0.28px;">—</div>
           <div style="font-size:14px;color:#64748b;margin-top:4px;letter-spacing:-0.224px;">참여 임직원</div>
         </div>
         <div style="width:1px;height:40px;background:#e2e8f0;"></div>
         <div>
-          <div style="font-size:28px;font-weight:600;color:#2552B5;letter-spacing:-0.28px;">주 2회</div>
-          <div style="font-size:14px;color:#64748b;margin-top:4px;letter-spacing:-0.224px;">콘텐츠 업데이트</div>
+          <div id="stat-updated" style="font-size:28px;font-weight:600;color:#2552B5;letter-spacing:-0.28px;">—</div>
+          <div style="font-size:14px;color:#64748b;margin-top:4px;letter-spacing:-0.224px;">최근 업데이트</div>
         </div>
       </div>
     </div>
@@ -398,60 +398,8 @@
             </button>
           </div>
 
-          <div class="card fade-up delay-1" style="overflow:hidden;">
-            <div class="post-row" onclick="navigate('cases')" style="border-bottom:1px solid #e2e8f0;">
-              <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-                <span class="badge badge-blue">마케팅</span>
-                <span class="badge badge-green">Claude</span>
-              </div>
-              <div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:6px;line-height:1.35;letter-spacing:-0.374px;">
-                뉴스레터 초안 작성 시간 80% 단축 — Claude 프롬프트 실전 가이드
-              </div>
-              <div style="color:#475569;font-size:15px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                매주 2시간씩 걸리던 뉴스레터 초안 작성을 Claude에게 맡겼습니다. 타겟 독자층, 핵심 메시지, 제품 정보를 입력하면 30분 내로 3가지 버전의 초안이 나옵니다.
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
-                <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">김○○ 팀장</span>
-                <span style="color:#cbd5e1;font-size:12px;">·</span>
-                <span style="font-size:14px;color:#94a3b8;">2025.01.15 · 3분</span>
-              </div>
-            </div>
-
-            <div class="post-row" onclick="navigate('cases')" style="border-bottom:1px solid #e2e8f0;">
-              <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-                <span class="badge badge-purple">HR</span>
-                <span class="badge badge-cyan">Perplexity</span>
-              </div>
-              <div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:6px;line-height:1.35;letter-spacing:-0.374px;">
-                경쟁사 채용 트렌드 분석을 AI로 20분 만에 완료
-              </div>
-              <div style="color:#475569;font-size:15px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                Perplexity에 경쟁사 5곳의 최근 채용 공고 트렌드를 물어보니 직군별, 기술 스택별로 정리된 분석 결과와 함께 출처 링크까지 제공해줬습니다.
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
-                <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">손○○ 매니저</span>
-                <span style="color:#cbd5e1;font-size:12px;">·</span>
-                <span style="font-size:14px;color:#94a3b8;">2025.01.10 · 2분</span>
-              </div>
-            </div>
-
-            <div class="post-row" onclick="navigate('cases')">
-              <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-                <span class="badge badge-orange">영업</span>
-                <span class="badge badge-green">ChatGPT</span>
-              </div>
-              <div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:6px;line-height:1.35;letter-spacing:-0.374px;">
-                고객사별 맞춤 제안서 자동화 — 영업 준비 시간 절반으로
-              </div>
-              <div style="color:#475569;font-size:15px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-                고객사 업종, 규모, 주요 과제를 입력하면 그에 맞는 제안서 목차와 핵심 메시지를 자동 생성합니다.
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
-                <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">허○○ 과장</span>
-                <span style="color:#cbd5e1;font-size:12px;">·</span>
-                <span style="font-size:14px;color:#94a3b8;">2025.01.07 · 4분</span>
-              </div>
-            </div>
+          <div class="card fade-up delay-1" id="home-latest-card" style="overflow:hidden;">
+            <div style="padding:32px;text-align:center;color:#94a3b8;font-size:15px;">불러오는 중...</div>
           </div>
         </div>
 
@@ -1520,6 +1468,53 @@ function checkPwStrength(pw) {
   document.getElementById('pw-strength-text').style.color = score > 0 ? colors[score-1] : '#334155';
 }
 
+// ── 홈 통계 + 최신사례 로드 ──
+async function loadHomeData() {
+  const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+  if (error || !data) return;
+
+  // 통계
+  const caseCount = data.length;
+  const memberCount = new Set(data.map(p => p.author_name).filter(Boolean)).size;
+  const el = document.getElementById('stat-cases');
+  if (el) el.textContent = caseCount + '개';
+  const el2 = document.getElementById('stat-members');
+  if (el2) el2.textContent = memberCount + '명';
+  if (data.length > 0) {
+    const latest = new Date(data[0].created_at);
+    const el3 = document.getElementById('stat-updated');
+    if (el3) el3.textContent = (latest.getMonth()+1) + '.' + latest.getDate();
+  }
+
+  // 최신 사례 3개
+  const card = document.getElementById('home-latest-card');
+  if (!card) return;
+  const latest3 = data.slice(0, 3);
+  if (latest3.length === 0) {
+    card.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:15px;">아직 등록된 사례가 없습니다.</div>';
+    return;
+  }
+  card.innerHTML = latest3.map((post, i) => {
+    const tools = Array.isArray(post.ai_tool) ? post.ai_tool : (post.ai_tool ? [post.ai_tool] : []);
+    const date = new Date(post.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const toolBadges = tools.map(t => `<span class="badge badge-green">${t}</span>`).join('');
+    const catBadge = post.category ? `<span class="badge badge-blue">${post.category}</span>` : '';
+    const isLast = i === latest3.length - 1;
+    return `
+      <div class="post-row" onclick="navigate('cases')" style="cursor:pointer;${isLast ? '' : 'border-bottom:1px solid #e2e8f0;'}">
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+          ${catBadge}${toolBadges}
+          <span style="font-size:14px;color:#94a3b8;margin-left:auto;">${date}</span>
+        </div>
+        <div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:6px;line-height:1.35;letter-spacing:-0.374px;">${post.title}</div>
+        <div style="color:#475569;font-size:15px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${post.content}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+          <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">${post.author_name || '익명'}${post.department ? ' · ' + post.department : ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 // ── 커뮤니티 게시글 로드 (Supabase) ──
 async function loadPosts() {
   const card = document.getElementById('community-posts-card');
@@ -1609,6 +1604,7 @@ function loginSuccessQuiet(name, email) {
 
 window.addEventListener('DOMContentLoaded', () => {
   loadPosts();
+  loadHomeData();
 });
 
 // ── 홈 그리드 반응형 ──
