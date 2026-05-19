@@ -1307,11 +1307,18 @@
         <input type="email" placeholder="이메일 주소" class="input" style="font-size:15px;" id="signup-email" required>
       </div>
       <div>
-        <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">소속 부서 <span style="color:#94a3b8;font-weight:400;">(선택)</span></label>
-        <select class="input" style="font-size:15px;" id="signup-dept">
-          <option value="">선택 안 함</option>
-          <option>마케팅팀</option><option>전략기획팀</option><option>HR팀</option>
-          <option>영업팀</option><option>개발팀</option><option>운영팀</option><option>기타</option>
+        <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">사번 <span style="color:#ef4444;font-size:12px;">필수</span></label>
+        <input type="text" placeholder="사번을 입력하세요" class="input" style="font-size:15px;" id="signup-empno" required>
+      </div>
+      <div>
+        <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">소속 부서 <span style="color:#ef4444;font-size:12px;">필수</span></label>
+        <select class="input" style="font-size:15px;" id="signup-dept" required>
+          <option value="">부서를 선택하세요</option>
+          <option>임원</option>
+          <option>고객지원팀</option>
+          <option>의약품사업팀</option>
+          <option>진료재료운영팀</option>
+          <option>경영관리팀</option>
         </select>
       </div>
       <div>
@@ -1565,32 +1572,47 @@ async function handleLogin(e) {
     }
     err.style.display = 'block'; return;
   }
+  const approved = data.user.user_metadata?.approved;
+  if (!approved) {
+    await sb.auth.signOut();
+    err.textContent = '승인 대기 중입니다. 관리자 승인 후 로그인하실 수 있습니다.';
+    err.style.display = 'block';
+    return;
+  }
   const name = data.user.user_metadata?.name || email.split('@')[0];
   loginSuccess(name, email);
 }
 
-// ── 회원가입 처리 (UI 시뮬레이션) ──
+// ── 회원가입 처리 ──
 async function handleSignup(e) {
   e.preventDefault();
-  const name  = document.getElementById('signup-name').value;
-  const email = document.getElementById('signup-email').value;
-  const dept  = document.getElementById('signup-dept').value;
-  const pw    = document.getElementById('signup-pw').value;
-  const pw2   = document.getElementById('signup-pw-confirm').value;
-  const err   = document.getElementById('signup-error');
-  const btn   = e.target.querySelector('button[type=submit]');
+  const name   = document.getElementById('signup-name').value.trim();
+  const email  = document.getElementById('signup-email').value.trim();
+  const empno  = document.getElementById('signup-empno').value.trim();
+  const dept   = document.getElementById('signup-dept').value;
+  const pw     = document.getElementById('signup-pw').value;
+  const pw2    = document.getElementById('signup-pw-confirm').value;
+  const err    = document.getElementById('signup-error');
+  const btn    = e.target.querySelector('button[type=submit]');
 
+  err.style.display = 'none';
+  if (!empno)        { err.textContent = '사번을 입력해주세요.';              err.style.display = 'block'; return; }
+  if (!dept)         { err.textContent = '소속 부서를 선택해주세요.';          err.style.display = 'block'; return; }
   if (pw.length < 8) { err.textContent = '비밀번호는 8자 이상이어야 합니다.'; err.style.display = 'block'; return; }
   if (pw !== pw2)    { err.textContent = '비밀번호가 일치하지 않습니다.';     err.style.display = 'block'; return; }
 
   btn.textContent = '처리 중...'; btn.disabled = true;
   const { data, error } = await sb.auth.signUp({
     email, password: pw,
-    options: { data: { name, department: dept } }
+    options: { data: { name, department: dept, employee_no: empno, approved: false } }
   });
-  btn.textContent = '회원가입 완료'; btn.disabled = false;
+  btn.textContent = '가입 신청'; btn.disabled = false;
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
-  loginSuccess(name, email);
+
+  // 가입 직후 자동 로그인 방지 — 관리자 승인 대기
+  await sb.auth.signOut();
+  closeAuth();
+  showToast('가입 신청이 완료됐습니다! 관리자 승인 후 로그인하실 수 있습니다.');
 }
 
 // ── 로그인 성공 UI 전환 ──
