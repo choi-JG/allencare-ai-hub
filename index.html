@@ -258,8 +258,9 @@
       <button class="tab-btn active" data-page="home" onclick="navigate('home')">홈</button>
       <button class="tab-btn" data-page="tools" onclick="navigate('tools')">AI 도구</button>
       <button class="tab-btn" data-page="tips" onclick="navigate('tips')">기본 노하우·팁</button>
-      <button class="tab-btn" data-page="cases" onclick="navigate('cases')">활용 사례</button>
-      <button class="tab-btn" data-page="community" onclick="navigate('community')">커뮤니티</button>
+      <button class="tab-btn" data-page="cases" onclick="navigate('cases')">Best practice</button>
+      <button class="tab-btn" data-page="community" onclick="navigate('community')">임직원 활용 사례</button>
+      <button class="tab-btn" data-page="forum" onclick="navigate('forum')">커뮤니티</button>
     </nav>
 
     <!-- 우측 버튼 영역 -->
@@ -306,8 +307,9 @@
       <button class="tab-btn text-left active" data-page="home" onclick="navigate('home'); toggleMobile()">홈</button>
       <button class="tab-btn text-left" data-page="tools" onclick="navigate('tools'); toggleMobile()">AI 도구</button>
       <button class="tab-btn text-left" data-page="tips" onclick="navigate('tips'); toggleMobile()">기본 노하우·팁</button>
-      <button class="tab-btn text-left" data-page="cases" onclick="navigate('cases'); toggleMobile()">활용 사례</button>
-      <button class="tab-btn text-left" data-page="community" onclick="navigate('community'); toggleMobile()">커뮤니티</button>
+      <button class="tab-btn text-left" data-page="cases" onclick="navigate('cases'); toggleMobile()">Best practice</button>
+      <button class="tab-btn text-left" data-page="community" onclick="navigate('community'); toggleMobile()">임직원 활용 사례</button>
+      <button class="tab-btn text-left" data-page="forum" onclick="navigate('forum'); toggleMobile()">커뮤니티</button>
       <hr style="border-color:rgba(255,255,255,0.1); margin:8px 0;">
       <div id="mobile-auth-buttons">
         <div style="display:flex;gap:8px;">
@@ -385,9 +387,9 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;" class="fade-up delay-1">
             <div>
               <span class="section-eyebrow eyebrow-light">LATEST</span>
-              <h2 style="font-size:22px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;margin:0;">최신 활용 사례</h2>
+              <h2 style="font-size:22px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;margin:0;">최신 임직원 활용 사례</h2>
             </div>
-            <button onclick="navigate('cases')" class="btn-ghost" style="font-size:14px;padding:7px 16px;">
+            <button onclick="navigate('community')" class="btn-ghost" style="font-size:14px;padding:7px 16px;">
               전체보기
               <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
@@ -1076,9 +1078,9 @@
     <div class="content-wrap">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:36px;flex-wrap:wrap;" class="fade-up">
         <div>
-          <span class="section-eyebrow eyebrow-light">COMMUNITY</span>
-          <h1 class="section-title">커뮤니티</h1>
-          <p class="section-desc desc-light">발견한 AI 활용법을 자유롭게 공유하고, 동료의 노하우를 배워가세요.</p>
+          <span class="section-eyebrow eyebrow-light">USE CASES</span>
+          <h1 class="section-title">임직원 활용 사례</h1>
+          <p class="section-desc desc-light">AllenCare 임직원이 직접 경험하고 공유한 AI 활용 사례 모음입니다.</p>
         </div>
         <button onclick="openModal()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;gap:6px;">
           <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
@@ -1177,6 +1179,47 @@
 
 
 <!-- ══════════════════════════════════
+     페이지 6: 커뮤니티 (자유/Q&A)
+══════════════════════════════════ -->
+<div id="page-forum" class="page">
+  <div class="tile-light" style="padding-top:64px;padding-bottom:80px;">
+    <div class="content-wrap">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:36px;flex-wrap:wrap;" class="fade-up">
+        <div>
+          <span class="section-eyebrow eyebrow-light">COMMUNITY</span>
+          <h1 class="section-title">커뮤니티</h1>
+          <p class="section-desc desc-light">자유롭게 소통하고 질문하세요. AI에 대한 궁금증을 동료와 함께 해결해보세요.</p>
+        </div>
+        <button onclick="openForumModal()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;gap:6px;">
+          <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          글 작성하기
+        </button>
+      </div>
+
+      <!-- 필터 -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;" class="fade-up delay-1">
+        <button class="chip active" onclick="filterForum(this,'all')">전체</button>
+        <button class="chip" onclick="filterForum(this,'free')">자유글</button>
+        <button class="chip" onclick="filterForum(this,'question')">질문</button>
+      </div>
+
+      <!-- 검색 -->
+      <div style="position:relative;max-width:480px;margin-bottom:24px;" class="fade-up delay-1">
+        <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+        </svg>
+        <input type="text" placeholder="키워드 검색..." class="input" style="padding-left:44px;border-radius:9999px;" oninput="searchForum(this.value)">
+      </div>
+
+      <!-- 포럼 게시글 목록 -->
+      <div class="card fade-up delay-2" id="forum-posts-card" style="overflow:hidden;">
+        <div style="padding:32px;text-align:center;color:#94a3b8;font-size:15px;">불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
      모달: 사례 공유
 ══════════════════════════════════ -->
 <div id="share-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
@@ -1236,6 +1279,49 @@
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════
+     모달: 커뮤니티 글쓰기
+══════════════════════════════════ -->
+<div id="forum-modal" class="modal-overlay" onclick="if(event.target===this)closeForumModal()">
+  <div class="modal-box" style="max-width:560px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <h2 style="font-weight:600;color:#0f172a;font-size:20px;letter-spacing:-0.374px;">커뮤니티 글 작성</h2>
+        <p style="font-size:14px;color:#94a3b8;margin-top:4px;letter-spacing:-0.224px;">자유롭게 소통하고 질문해보세요</p>
+      </div>
+      <button onclick="closeForumModal()" style="width:32px;height:32px;border-radius:8px;background:#f8fafc;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#94a3b8;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form onsubmit="handleForumSubmit(event)" style="display:flex;flex-direction:column;gap:16px;">
+      <!-- 글 유형 -->
+      <div>
+        <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:8px;letter-spacing:-0.224px;">글 유형</label>
+        <div style="display:flex;gap:8px;">
+          <label style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e2e8f0;border-radius:9999px;cursor:pointer;font-size:14px;color:#475569;transition:all 0.1s;" id="forum-type-free-label">
+            <input type="radio" name="forum-type" value="free" checked onchange="updateForumTypeStyle()" style="accent-color:#2552B5;"> 자유글
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #2552B5;border-radius:9999px;cursor:pointer;font-size:14px;color:#2552B5;background:#eff6ff;transition:all 0.1s;" id="forum-type-question-label">
+            <input type="radio" name="forum-type" value="question" onchange="updateForumTypeStyle()" style="accent-color:#2552B5;"> 질문
+          </label>
+        </div>
+      </div>
+      <!-- 제목 -->
+      <div>
+        <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">제목</label>
+        <input type="text" id="forum-title" class="input" placeholder="제목을 입력하세요" style="font-size:15px;" required>
+      </div>
+      <!-- 내용 -->
+      <div>
+        <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">내용</label>
+        <textarea id="forum-content" class="input" placeholder="내용을 자유롭게 작성해주세요" style="font-size:15px;min-height:140px;resize:vertical;" required></textarea>
+      </div>
+      <div id="forum-error" style="display:none;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:14px;color:#dc2626;"></div>
+      <button type="submit" id="forum-submit-btn" class="btn-primary" style="width:100%;justify-content:center;padding:13px;">등록하기</button>
+    </form>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════
      모달: 로그인 / 회원가입
@@ -1380,7 +1466,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── 페이지 라우팅 ──
 function navigate(pageId) {
-  const protectedPages = ['tips', 'cases', 'community'];
+  const protectedPages = ['tips', 'cases', 'community', 'forum'];
   if (protectedPages.includes(pageId) && !currentUser) {
     openAuth('login');
     return;
@@ -1575,7 +1661,8 @@ async function handleLogin(e) {
     return;
   }
   const name = data.user.user_metadata?.name || email.split('@')[0];
-  loginSuccess(name, email);
+  const dept = data.user.user_metadata?.department || '';
+  loginSuccess(name, email, dept);
 }
 
 // ── 회원가입 처리 ──
@@ -1611,9 +1698,9 @@ async function handleSignup(e) {
 }
 
 // ── 로그인 성공 UI 전환 ──
-function loginSuccess(name, email) {
-  loginSuccessQuiet(name, email);
-  showToast(`${name}님, 환영합니다! 🎉`);
+function loginSuccess(name, email, dept) {
+  loginSuccessQuiet(name, email, dept);
+  showToast(`${name}님, 환영합니다!`);
 }
 
 // ── 로그아웃 (Supabase) ──
@@ -1667,13 +1754,19 @@ async function loadHomeData() {
   const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
   if (error || !data) return;
 
-  // 통계
-  const caseCount = data.length;
-  const memberCount = new Set(data.map(p => p.author_name).filter(Boolean)).size;
+  // 통계 — 사례 수
   const el = document.getElementById('stat-cases');
-  if (el) el.textContent = caseCount + '개';
-  const el2 = document.getElementById('stat-members');
-  if (el2) el2.textContent = memberCount + '명';
+  if (el) el.textContent = data.length + '개';
+
+  // 통계 — 가입 회원 수 (API 호출)
+  try {
+    const res = await fetch('/api/user-count');
+    if (res.ok) {
+      const d = await res.json();
+      const el2 = document.getElementById('stat-members');
+      if (el2) el2.textContent = (d.approved || d.total || 0) + '명';
+    }
+  } catch (_) {}
   if (data.length > 0) {
     const latest = new Date(data[0].created_at);
     const yy = String(latest.getFullYear()).slice(2);
@@ -1710,6 +1803,101 @@ async function loadHomeData() {
         </div>
       </div>`;
   }).join('');
+}
+
+// ── 커뮤니티(포럼) ──
+let allForumPosts = [];
+let currentForumFilter = 'all';
+
+function openForumModal() { document.getElementById('forum-modal').style.display='flex'; }
+function closeForumModal() { document.getElementById('forum-modal').style.display=''; }
+
+function updateForumTypeStyle() {
+  const free = document.querySelector('input[name="forum-type"][value="free"]').checked;
+  document.getElementById('forum-type-free-label').style.cssText     = free ? 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #2552B5;border-radius:9999px;cursor:pointer;font-size:14px;color:#2552B5;background:#eff6ff;transition:all 0.1s;' : 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e2e8f0;border-radius:9999px;cursor:pointer;font-size:14px;color:#475569;transition:all 0.1s;';
+  document.getElementById('forum-type-question-label').style.cssText = !free ? 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #2552B5;border-radius:9999px;cursor:pointer;font-size:14px;color:#2552B5;background:#eff6ff;transition:all 0.1s;' : 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e2e8f0;border-radius:9999px;cursor:pointer;font-size:14px;color:#475569;transition:all 0.1s;';
+}
+
+async function loadForumPosts() {
+  const card = document.getElementById('forum-posts-card');
+  if (!card) return;
+  card.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:15px;">불러오는 중...</div>';
+  const { data, error } = await sb.from('forum_posts').select('*').order('created_at', { ascending: false });
+  if (error) { card.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8;font-size:15px;">불러오기 실패</div>'; return; }
+  allForumPosts = data || [];
+  renderForumPosts(allForumPosts);
+}
+
+function renderForumPosts(posts) {
+  const card = document.getElementById('forum-posts-card');
+  if (!posts.length) {
+    card.innerHTML = '<div style="padding:48px;text-align:center;"><div style="font-size:2rem;margin-bottom:12px;">💬</div><div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:8px;">아직 글이 없어요</div><div style="font-size:15px;color:#94a3b8;margin-bottom:20px;">첫 번째로 글을 작성해보세요!</div><button onclick="openForumModal()" class="btn-primary" style="margin:0 auto;">글 작성하기</button></div>';
+    return;
+  }
+  card.innerHTML = posts.map((p, i) => {
+    const isLast = i === posts.length - 1;
+    const date = new Date(p.created_at).toLocaleDateString('ko-KR', { year:'2-digit', month:'2-digit', day:'2-digit' });
+    const typeBadge = p.post_type === 'question'
+      ? '<span class="badge badge-orange">질문</span>'
+      : '<span class="badge badge-blue">자유글</span>';
+    return `
+      <div class="post-row" style="${isLast ? '' : 'border-bottom:1px solid #e2e8f0;'}">
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+          ${typeBadge}
+          <span style="font-size:13px;color:#94a3b8;margin-left:auto;">${date}</span>
+        </div>
+        <div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:6px;line-height:1.35;letter-spacing:-0.374px;">${p.title}</div>
+        <div style="color:#475569;font-size:15px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.content}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#2552B5;">${(p.author_name||'익명').charAt(0)}</div>
+          <span style="font-size:14px;color:#64748b;">${p.author_name||'익명'}${p.department ? ' · '+p.department : ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterForum(btn, type) {
+  currentForumFilter = type;
+  document.querySelectorAll('#page-forum .chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = type === 'all' ? allForumPosts : allForumPosts.filter(p => p.post_type === type);
+  renderForumPosts(filtered);
+}
+
+function searchForum(q) {
+  const filtered = allForumPosts.filter(p => {
+    const match = (p.title||'').includes(q) || (p.content||'').includes(q);
+    return match && (currentForumFilter === 'all' || p.post_type === currentForumFilter);
+  });
+  renderForumPosts(filtered);
+}
+
+async function handleForumSubmit(e) {
+  e.preventDefault();
+  if (!currentUser) { openAuth('login'); return; }
+  const title   = document.getElementById('forum-title').value.trim();
+  const content = document.getElementById('forum-content').value.trim();
+  const type    = document.querySelector('input[name="forum-type"]:checked').value;
+  const errEl   = document.getElementById('forum-error');
+  const btn     = document.getElementById('forum-submit-btn');
+
+  errEl.style.display = 'none';
+  btn.textContent = '등록 중...'; btn.disabled = true;
+
+  const { error } = await sb.from('forum_posts').insert([{
+    title, content,
+    post_type: type,
+    author_name: currentUser.name,
+    department: currentUser.department || '',
+  }]);
+
+  btn.textContent = '등록하기'; btn.disabled = false;
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+
+  closeForumModal();
+  e.target.reset();
+  showToast('글이 등록됐습니다!');
+  await loadForumPosts();
 }
 
 // ── 커뮤니티 게시글 로드 (Supabase) ──
@@ -1777,8 +1965,8 @@ sb.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
     const u    = session.user;
     const name = u.user_metadata?.name || u.email.split('@')[0];
-    // 페이지 로드 시 복원이면 토스트 없이 UI만 업데이트
-    loginSuccessQuiet(name, u.email);
+    const dept = u.user_metadata?.department || '';
+    loginSuccessQuiet(name, u.email, dept);
   } else if (event === 'SIGNED_OUT') {
     currentUser = null;
     navigate('home');
@@ -1789,8 +1977,8 @@ sb.auth.onAuthStateChange((event, session) => {
   }
 });
 
-function loginSuccessQuiet(name, email) {
-  currentUser = { name, email };
+function loginSuccessQuiet(name, email, department) {
+  currentUser = { name, email, department: department || '' };
   closeAuth();
   const initial = name.charAt(0).toUpperCase();
   document.getElementById('user-avatar').textContent = initial;
@@ -1805,6 +1993,7 @@ function loginSuccessQuiet(name, email) {
 window.addEventListener('DOMContentLoaded', () => {
   loadPosts();
   loadHomeData();
+  loadForumPosts();
 });
 
 // ── 홈 그리드 반응형 ──
