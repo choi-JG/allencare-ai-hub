@@ -1076,103 +1076,55 @@
 <div id="page-community" class="page">
   <div class="tile-light" style="padding-top:64px;padding-bottom:80px;">
     <div class="content-wrap">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:36px;flex-wrap:wrap;" class="fade-up">
-        <div>
-          <span class="section-eyebrow eyebrow-light">USE CASES</span>
-          <h1 class="section-title">임직원 활용 사례</h1>
-          <p class="section-desc desc-light">AllenCare 임직원이 직접 경험하고 공유한 AI 활용 사례 모음입니다.</p>
+
+      <!-- ── 목록 뷰 ── -->
+      <div id="community-list-view">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:32px;flex-wrap:wrap;" class="fade-up">
+          <div>
+            <span class="section-eyebrow eyebrow-light">USE CASES</span>
+            <h1 class="section-title">임직원 활용 사례</h1>
+            <p class="section-desc desc-light">AllenCare 임직원이 직접 경험하고 공유한 AI 활용 사례 모음입니다.</p>
+          </div>
+          <button onclick="openModal()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;gap:6px;">
+            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            사례 공유하기
+          </button>
         </div>
-        <button onclick="openModal()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;gap:6px;">
-          <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-          사례 공유하기
+
+        <!-- 검색 -->
+        <div style="position:relative;max-width:480px;margin-bottom:20px;" class="fade-up delay-1">
+          <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+          </svg>
+          <input type="text" placeholder="제목, 내용 검색..." class="input" style="padding-left:44px;border-radius:9999px;" oninput="searchCommunity(this.value)">
+        </div>
+
+        <!-- 게시판 테이블 -->
+        <div class="card fade-up delay-2" style="overflow:hidden;">
+          <!-- 헤더 행 -->
+          <div style="display:grid;grid-template-columns:52px 1fr 100px 90px 60px;gap:0;border-bottom:2px solid #e2e8f0;padding:12px 20px;background:#f8fafc;">
+            <div style="font-size:13px;font-weight:600;color:#64748b;text-align:center;">번호</div>
+            <div style="font-size:13px;font-weight:600;color:#64748b;padding-left:8px;">제목</div>
+            <div style="font-size:13px;font-weight:600;color:#64748b;text-align:center;">작성자</div>
+            <div style="font-size:13px;font-weight:600;color:#64748b;text-align:center;">날짜</div>
+            <div style="font-size:13px;font-weight:600;color:#64748b;text-align:center;">추천</div>
+          </div>
+          <!-- 게시글 목록 -->
+          <div id="community-posts-card">
+            <div style="padding:40px;text-align:center;color:#94a3b8;font-size:15px;">불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 상세 뷰 ── -->
+      <div id="community-detail-view" style="display:none;">
+        <button onclick="backToCommunityList()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9999px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:#475569;font-family:inherit;margin-bottom:28px;transition:all 0.1s;" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background='#fff'">
+          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          목록으로
         </button>
+        <div class="card" id="community-post-detail" style="padding:36px;"></div>
       </div>
 
-      <!-- 검색 -->
-      <div style="position:relative;max-width:480px;margin-bottom:24px;" class="fade-up delay-1">
-        <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
-        </svg>
-        <input type="text" placeholder="키워드 검색..." class="input" style="padding-left:44px;border-radius:9999px;">
-      </div>
-
-      <!-- 커뮤니티 포스트 목록 -->
-      <div class="card fade-up delay-2" id="community-posts-card" style="overflow:hidden;">
-
-        <div class="post-row" style="border-bottom:1px solid #e2e8f0;">
-          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-            <span class="badge badge-blue">마케팅</span>
-            <span class="badge badge-green">Claude</span>
-            <span style="font-size:13px;color:#94a3b8;margin-left:auto;letter-spacing:-0.224px;">2025.01.15</span>
-          </div>
-          <h3 style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:8px;line-height:1.4;letter-spacing:-0.374px;">SNS 콘텐츠 캘린더 한 달치를 30분 만에 완성했습니다</h3>
-          <p style="color:#475569;font-size:15px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:-0.224px;">
-            브랜드 톤, 타겟 연령대, 주력 제품 카테고리를 프롬프트에 담아 요청했더니 인스타그램, 블로그, 카카오채널용으로 각각 다르게 작성된 30일치 콘텐츠 아이디어가 나왔습니다.
-          </p>
-          <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#2552B5;">J</div>
-            <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">정○○</span>
-            <span style="color:#e2e8f0;font-size:12px;">·</span>
-            <span style="font-size:14px;color:#94a3b8;letter-spacing:-0.224px;">조회 187</span>
-            <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:14px;color:#94a3b8;">
-              <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-              24
-            </div>
-          </div>
-        </div>
-
-        <div class="post-row" style="border-bottom:1px solid #e2e8f0;">
-          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-            <span class="badge badge-purple">HR</span>
-            <span class="badge badge-cyan">Perplexity</span>
-            <span style="font-size:13px;color:#94a3b8;margin-left:auto;letter-spacing:-0.224px;">2025.01.10</span>
-          </div>
-          <h3 style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:8px;line-height:1.4;letter-spacing:-0.374px;">경쟁사 채용 트렌드 분석을 AI로 20분 만에 완료</h3>
-          <p style="color:#475569;font-size:15px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:-0.224px;">
-            Perplexity에 경쟁사 5곳의 최근 채용 공고 트렌드를 물어보니 직군별, 기술 스택별로 정리된 분석 결과와 함께 출처 링크까지 제공해줬습니다.
-          </p>
-          <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:#faf5ff;border:1px solid #ddd6fe;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#7c3aed;">S</div>
-            <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">손○○</span>
-            <span style="color:#e2e8f0;font-size:12px;">·</span>
-            <span style="font-size:14px;color:#94a3b8;letter-spacing:-0.224px;">조회 143</span>
-            <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:14px;color:#94a3b8;">
-              <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-              19
-            </div>
-          </div>
-        </div>
-
-        <div class="post-row" style="border-bottom:1px solid #e2e8f0;">
-          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-            <span class="badge badge-orange">영업</span>
-            <span class="badge badge-green">ChatGPT</span>
-            <span style="font-size:13px;color:#94a3b8;margin-left:auto;letter-spacing:-0.224px;">2025.01.07</span>
-          </div>
-          <h3 style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:8px;line-height:1.4;letter-spacing:-0.374px;">고객사별 맞춤 제안서 템플릿 자동화 노하우 공유</h3>
-          <p style="color:#475569;font-size:15px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:-0.224px;">
-            고객사 업종, 규모, 주요 과제를 입력하면 제안서 목차와 핵심 메시지를 자동 생성합니다. 영업 준비 시간이 절반으로 줄었습니다.
-          </p>
-          <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:#fff7ed;border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#ea580c;">H</div>
-            <span style="font-size:14px;color:#64748b;letter-spacing:-0.224px;">허○○</span>
-            <span style="color:#e2e8f0;font-size:12px;">·</span>
-            <span style="font-size:14px;color:#94a3b8;letter-spacing:-0.224px;">조회 218</span>
-            <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:14px;color:#94a3b8;">
-              <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-              31
-            </div>
-          </div>
-        </div>
-
-        <!-- 빈 상태 -->
-        <div id="community-empty" style="display:none;padding:60px 24px;text-align:center;">
-          <div style="font-size:2rem;margin-bottom:12px;">✍️</div>
-          <div style="font-weight:600;color:#0f172a;font-size:17px;margin-bottom:8px;letter-spacing:-0.374px;">아직 글이 없어요</div>
-          <div style="font-size:15px;color:#94a3b8;margin-bottom:20px;letter-spacing:-0.224px;">첫 번째로 AI 활용 경험을 공유해보세요!</div>
-          <button onclick="openModal()" class="btn-primary" style="margin:0 auto;">사례 공유하기</button>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -1526,6 +1478,7 @@ async function submitCase(e) {
     content:     document.getElementById('post-content').value,
     ai_tool:     tools,
     category:    document.getElementById('post-dept').value,
+    likes:       0,
   });
 
   btn.textContent = '공유하기'; btn.disabled = false;
@@ -1791,7 +1744,7 @@ async function loadHomeData() {
     const catBadge = post.category ? `<span class="badge badge-blue">${post.category}</span>` : '';
     const isLast = i === latest3.length - 1;
     return `
-      <div class="post-row" onclick="navigate('cases')" style="cursor:pointer;${isLast ? '' : 'border-bottom:1px solid #e2e8f0;'}">
+      <div class="post-row" onclick="navigate('community')" style="cursor:pointer;${isLast ? '' : 'border-bottom:1px solid #e2e8f0;'}">
         <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
           ${catBadge}${toolBadges}
           <span style="font-size:14px;color:#94a3b8;margin-left:auto;">${date}</span>
@@ -1900,64 +1853,144 @@ async function handleForumSubmit(e) {
   await loadForumPosts();
 }
 
-// ── 커뮤니티 게시글 로드 (Supabase) ──
+// ── 커뮤니티(임직원 활용 사례) ──
+let allPosts = [];
+
 async function loadPosts() {
   const card = document.getElementById('community-posts-card');
   if (!card) return;
-  card.innerHTML = '<div style="padding:40px;text-align:center;color:#475569;font-size:0.875rem;">불러오는 중...</div>';
+  card.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:15px;">불러오는 중...</div>';
 
   const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
 
-  if (error || !data || data.length === 0) {
-    // 데이터 없으면 샘플 포스트로 복원
-    card.innerHTML = getSamplePosts();
+  if (error) {
+    card.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:15px;">불러오기 실패. 새로고침해주세요.</div>';
     return;
   }
-  card.innerHTML = data.map(post => renderPost(post)).join('');
+
+  allPosts = data || [];
+  renderCommunityBoard(allPosts);
 }
 
-function renderPost(post) {
-  const tools  = Array.isArray(post.ai_tool) ? post.ai_tool : [];
-  const date   = new Date(post.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+function renderCommunityBoard(posts) {
+  const card = document.getElementById('community-posts-card');
+  if (!card) return;
+
+  if (posts.length === 0) {
+    card.innerHTML = `
+      <div style="padding:48px;text-align:center;color:#94a3b8;font-size:15px;">
+        <div style="font-size:2rem;margin-bottom:12px;">✍️</div>
+        아직 작성된 사례가 없습니다.<br>
+        <button onclick="openModal()" style="margin-top:16px;background:none;border:none;color:#2552B5;cursor:pointer;font-size:15px;font-weight:600;font-family:inherit;">첫 사례 공유하기 →</button>
+      </div>`;
+    return;
+  }
+
+  card.innerHTML = posts.map((post, idx) => {
+    const globalIdx = allPosts.indexOf(post);
+    const num = globalIdx >= 0 ? allPosts.length - globalIdx : posts.length - idx;
+    const tools = Array.isArray(post.ai_tool) ? post.ai_tool : [];
+    const badge = tools.length > 0
+      ? `<span class="badge badge-green" style="font-size:11px;padding:2px 7px;flex-shrink:0;">${tools[0]}</span>`
+      : post.category
+        ? `<span class="badge badge-blue" style="font-size:11px;padding:2px 7px;flex-shrink:0;">${post.category}</span>`
+        : '';
+    const d = new Date(post.created_at);
+    const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const author = post.author_name || '익명';
+    const likes = post.likes || 0;
+    return `
+      <div onclick="showPostDetail('${post.id}')" style="display:grid;grid-template-columns:52px 1fr 100px 90px 60px;border-bottom:1px solid #f1f5f9;padding:12px 20px;cursor:pointer;transition:background 0.1s;align-items:center;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+        <div style="font-size:13px;color:#94a3b8;text-align:center;">${num}</div>
+        <div style="padding-left:8px;display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;">
+          ${badge}
+          <span style="font-size:15px;color:#0f172a;letter-spacing:-0.374px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${post.title || ''}</span>
+        </div>
+        <div style="font-size:13px;color:#64748b;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px;">${author}</div>
+        <div style="font-size:13px;color:#94a3b8;text-align:center;">${dateStr}</div>
+        <div style="font-size:13px;color:#64748b;text-align:center;font-weight:600;">${likes > 0 ? likes : '-'}</div>
+      </div>`;
+  }).join('');
+}
+
+function showPostDetail(postId) {
+  const post = allPosts.find(p => String(p.id) === String(postId));
+  if (!post) return;
+
+  document.getElementById('community-list-view').style.display = 'none';
+  document.getElementById('community-detail-view').style.display = 'block';
+  window.scrollTo(0, 0);
+
+  const tools = Array.isArray(post.ai_tool) ? post.ai_tool : [];
   const toolBadges = tools.map(t => `<span class="badge badge-green">${t}</span>`).join('');
-  const catBadge   = post.category ? `<span class="badge badge-blue">${post.category}</span>` : '';
-  return `
-    <div class="post-row" style="border-bottom:1px solid #e2e8f0;">
-      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-        ${catBadge}${toolBadges}
-        <span style="font-size:0.72rem;color:#64748b;margin-left:auto;">${date}</span>
-      </div>
-      <h3 style="font-weight:700;color:#0f172a;font-size:0.95rem;margin-bottom:6px;line-height:1.4;">${post.title}</h3>
-      <p style="color:#475569;font-size:0.82rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${post.content}</p>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-        <div style="width:26px;height:26px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#2552B5;">
-          ${(post.author_name || '익명').charAt(0)}
-        </div>
-        <span style="font-size:0.78rem;color:#64748B;">${post.author_name || '익명'}${post.department ? ' · ' + post.department : ''}</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#334155;">
-          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-          ${post.likes || 0}
-        </div>
-      </div>
-    </div>`;
-}
+  const catBadge = post.category ? `<span class="badge badge-blue">${post.category}</span>` : '';
+  const d = new Date(post.created_at);
+  const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const likes = post.likes || 0;
+  const sid = String(post.id);
 
-function getSamplePosts() {
-  return `
-    <div class="post-row" style="border-bottom:1px solid #e2e8f0;">
-      <div style="display:flex;gap:8px;margin-bottom:10px;"><span class="badge badge-blue">마케팅</span><span class="badge badge-green">Claude</span><span style="font-size:0.72rem;color:#64748b;margin-left:auto;">2025.01.15</span></div>
-      <h3 style="font-weight:700;color:#0f172a;font-size:0.95rem;margin-bottom:6px;">SNS 콘텐츠 캘린더 한 달치를 30분 만에 완성했습니다</h3>
-      <p style="color:#475569;font-size:0.82rem;line-height:1.6;">브랜드 톤, 타겟 연령대, 주력 제품 카테고리를 프롬프트에 담아 요청했더니 30일치 콘텐츠 아이디어가 나왔습니다.</p>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-        <div style="width:26px;height:26px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#2552B5;">J</div>
-        <span style="font-size:0.78rem;color:#64748B;">정○○</span>
+  document.getElementById('community-post-detail').innerHTML = `
+    <div style="margin-bottom:24px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">${catBadge}${toolBadges}</div>
+      <h1 style="font-size:24px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;line-height:1.3;margin-bottom:16px;">${post.title}</h1>
+      <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#64748b;flex-wrap:wrap;">
+        <div style="width:30px;height:30px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#2552B5;flex-shrink:0;">${(post.author_name||'익명').charAt(0)}</div>
+        <span style="font-weight:600;color:#0f172a;">${post.author_name||'익명'}</span>
+        ${post.department ? `<span style="color:#cbd5e1;">·</span><span>${post.department}</span>` : ''}
+        <span style="color:#cbd5e1;">·</span>
+        <span>${dateStr}</span>
       </div>
     </div>
-    <div style="padding:32px;text-align:center;color:#475569;font-size:0.83rem;">
-      <div style="font-size:1.5rem;margin-bottom:8px;">✍️</div>
-      첫 번째 사례를 공유해주세요!<br>
-      <button onclick="openModal()" style="margin-top:12px;background:none;border:none;color:#2552B5;cursor:pointer;font-size:0.83rem;font-weight:600;">사례 공유하기 →</button>
+    <div style="height:1px;background:#e2e8f0;margin-bottom:28px;"></div>
+    <div style="font-size:17px;color:#1e293b;line-height:1.8;letter-spacing:-0.374px;white-space:pre-wrap;">${post.content}</div>
+    <div style="height:1px;background:#e2e8f0;margin-top:40px;margin-bottom:24px;"></div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button id="like-btn-${sid}" onclick="likePost('${sid}', ${likes})" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:9999px;border:1px solid #e2e8f0;background:#ffffff;cursor:pointer;font-size:15px;color:#475569;font-family:inherit;font-weight:600;transition:all 0.15s;" onmouseover="this.style.borderColor='#2552B5';this.style.color='#2552B5';" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#475569';">
+        <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+        추천&nbsp;<span id="like-count-${sid}">${likes}</span>
+      </button>
     </div>`;
+}
+
+function backToCommunityList() {
+  document.getElementById('community-detail-view').style.display = 'none';
+  document.getElementById('community-list-view').style.display = 'block';
+}
+
+async function likePost(postId, currentCount) {
+  const btn = document.getElementById(`like-btn-${postId}`);
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+
+  const newCount = Number(currentCount) + 1;
+  const { error } = await sb.from('posts').update({ likes: newCount }).eq('id', postId);
+
+  if (!error) {
+    const countEl = document.getElementById(`like-count-${postId}`);
+    if (countEl) countEl.textContent = newCount;
+    const p = allPosts.find(p => String(p.id) === String(postId));
+    if (p) p.likes = newCount;
+    if (btn) {
+      btn.style.background = '#eff6ff';
+      btn.style.borderColor = '#2552B5';
+      btn.style.color = '#2552B5';
+      btn.setAttribute('onclick', `likePost('${postId}', ${newCount})`);
+      btn.onmouseover = null;
+      btn.onmouseout = null;
+    }
+  } else {
+    showToast('추천 처리 중 오류가 발생했습니다.');
+  }
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+}
+
+function searchCommunity(q) {
+  const keyword = q.trim().toLowerCase();
+  if (!keyword) { renderCommunityBoard(allPosts); return; }
+  const filtered = allPosts.filter(p =>
+    (p.title||'').toLowerCase().includes(keyword) ||
+    (p.content||'').toLowerCase().includes(keyword)
+  );
+  renderCommunityBoard(filtered);
 }
 
 // ── 세션 자동 복원 (onAuthStateChange) ──
