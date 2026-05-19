@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllenCare AI Hub — AI 활용 지식 공유</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 400: '#5B82D9', 500: '#2552B5', 600: '#1E42A0' },
+            surface: { 900: '#070C15', 800: '#0F172A', 700: '#1E293B', 600: '#334155' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #070C15;
+      color: #CBD5E1;
+      font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0F172A; }
+    ::-webkit-scrollbar-thumb { background: #2552B5; border-radius: 3px; }
+
+    /* ── 레이아웃 ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(7,12,21,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(37,82,181,0.15);
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 60px;
+    }
+    .logo-wrap {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .logo-img-box {
+      background: #fff;
+      border-radius: 6px;
+      padding: 3px 8px;
+      display: flex; align-items: center;
+    }
+    .logo-img-box img { height: 22px; width: auto; display: block; }
+    .logo-sub {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      color: #2552B5;
+      background: rgba(37,82,181,0.12);
+      border: 1px solid rgba(37,82,181,0.25);
+      border-radius: 99px; padding: 2px 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── 탭 네비 ── */
+    .tab-nav {
+      display: flex; gap: 2px;
+    }
+    .tab-btn {
+      padding: 6px 16px; border-radius: 6px;
+      font-size: 0.875rem; font-weight: 500;
+      cursor: pointer; border: none; background: none;
+      color: #64748B;
+      transition: color 0.2s, background 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .tab-btn:hover { color: #94A3B8; background: rgba(255,255,255,0.04); }
+    .tab-btn:focus { outline: none; }
+    .tab-btn.active {
+      color: #93C5FD;
+      background: rgba(37,82,181,0.15);
+      font-weight: 600;
+    }
+
+    /* ── 페이지 컨테이너 ── */
+    .page { display: none; min-height: calc(100vh - 60px); padding-top: 80px; }
+    .page.active { display: block; }
+    .content-wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* ── 섹션 제목 ── */
+    .section-eyebrow {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+      color: #2552B5; font-family: monospace;
+      margin-bottom: 8px; display: block;
+    }
+    .section-title {
+      font-size: 1.75rem; font-weight: 800;
+      color: #F1F5F9; line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .section-desc { color: #64748B; font-size: 0.9rem; line-height: 1.7; }
+
+    /* ── 카드 ── */
+    .card {
+      background: #0F172A;
+      border: 1px solid rgba(37,82,181,0.12);
+      border-radius: 12px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .card:hover {
+      border-color: rgba(37,82,181,0.35);
+      box-shadow: 0 4px 24px rgba(37,82,181,0.1);
+      transform: translateY(-2px);
+    }
+
+    /* ── 배지 ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 99px;
+      font-size: 0.7rem; font-weight: 600;
+      font-family: monospace; letter-spacing: 0.04em;
+    }
+    .badge-blue { background: rgba(37,82,181,0.15); color: #93C5FD; border: 1px solid rgba(37,82,181,0.25); }
+    .badge-green { background: rgba(16,185,129,0.1); color: #6EE7B7; border: 1px solid rgba(16,185,129,0.2); }
+    .badge-purple { background: rgba(139,92,246,0.1); color: #C4B5FD; border: 1px solid rgba(139,92,246,0.2); }
+    .badge-orange { background: rgba(249,115,22,0.1); color: #FDBA74; border: 1px solid rgba(249,115,22,0.2); }
+    .badge-cyan { background: rgba(6,182,212,0.1); color: #67E8F9; border: 1px solid rgba(6,182,212,0.2); }
+    .badge-gray { background: rgba(100,116,139,0.15); color: #94A3B8; border: 1px solid rgba(100,116,139,0.2); }
+
+    /* ── 인풋 ── */
+    .input {
+      background: #0F172A; border: 1px solid #1E293B;
+      border-radius: 8px; padding: 9px 14px;
+      color: #E2E8F0; font-size: 0.875rem;
+      outline: none; width: 100%;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .input:focus { border-color: #2552B5; }
+    .input::placeholder { color: #334155; }
+
+    /* ── 버튼 ── */
+    .btn-primary {
+      background: #2552B5; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 9px 20px; font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: inherit;
+    }
+    .btn-primary:hover { background: #3B6DD4; box-shadow: 0 0 16px rgba(37,82,181,0.35); transform: scale(1.02); }
+    .btn-primary:focus { outline: none; box-shadow: 0 0 0 3px rgba(37,82,181,0.3); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-ghost {
+      background: transparent; color: #64748B;
+      border: 1px solid #1E293B; border-radius: 8px;
+      padding: 9px 20px; font-size: 0.875rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: inherit;
+    }
+    .btn-ghost:hover { color: #94A3B8; border-color: #334155; background: rgba(255,255,255,0.03); }
+    .btn-ghost:focus { outline: none; }
+    .btn-ghost:active { transform: scale(0.98); }
+
+    /* ── 그리드 배경 ── */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(37,82,181,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37,82,181,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── 구분선 ── */
+    .divider { height: 1px; background: rgba(37,82,181,0.1); }
+
+    /* ── 모달 ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(4,8,15,0.8); backdrop-filter: blur(8px);
+      z-index: 200; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #0F172A; border: 1px solid rgba(37,82,181,0.25);
+      border-radius: 16px; padding: 32px;
+      width: 100%; max-width: 540px; margin: 0 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 300;
+      background: #1E293B; border: 1px solid rgba(37,82,181,0.3);
+      border-radius: 10px; padding: 12px 18px;
+      font-size: 0.875rem; color: #E2E8F0;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── 필터 칩 ── */
+    .chip {
+      padding: 5px 14px; border-radius: 99px; border: none;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+      background: #1E293B; color: #64748B;
+    }
+    .chip:hover { color: #94A3B8; }
+    .chip.active { background: rgba(37,82,181,0.2); color: #93C5FD; border: 1px solid rgba(37,82,181,0.3); }
+    .chip:focus { outline: none; }
+
+    /* ── 커뮤니티 포스트 ── */
+    .post-row {
+      padding: 20px 24px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .post-row:hover { background: rgba(37,82,181,0.05); }
+
+    /* ── 홈 히어로 ── */
+    .hero-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(37,82,181,0.18) 0%, transparent 70%);
+      filter: blur(40px); pointer-events: none;
+    }
+
+    /* ── 반응형 ── */
+    @media (max-width: 768px) {
+      .tab-nav { gap: 0; }
+      .tab-btn { padding: 6px 10px; font-size: 0.78rem; }
+      .section-title { font-size: 1.4rem; }
+      .topbar-inner { padding: 0 16px; }
+      .content-wrap { padding: 0 16px 60px; }
+    }
+
+    /* ── 로딩 페이드 ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.4s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     TOP BAR
+══════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <!-- 로고 -->
+    <a href="#" class="logo-wrap" onclick="navigate('home')">
+      <div class="logo-img-box">
+        <img src="./brand_logo/logo.png" alt="AllenCare"
+             onerror="this.parentElement.style.display='none'; document.getElementById('logo-text').style.display='flex'">
+      </div>
+      <div id="logo-text" style="display:none; align-items:center; gap:6px;">
+        <span style="font-weight:800; color:#E2E8F0; font-size:1rem;">AllenCare</span>
+      </div>
+      <span class="logo-sub">AI Hub</span>
+    </a>
+
+    <!-- 탭 네비 (데스크톱) -->
+    <nav class="tab-nav hidden md:flex">
+      <button class="tab-btn active" data-page="home" onclick="navigate('home')">홈</button>
+      <button class="tab-btn" data-page="tools" onclick="navigate('tools')">AI 도구</button>
+      <button class="tab-btn" data-page="cases" onclick="navigate('cases')">활용 사례</button>
+      <button class="tab-btn" data-page="tips" onclick="navigate('tips')">노하우 팁</button>
+      <button class="tab-btn" data-page="community" onclick="navigate('community')">커뮤니티</button>
+    </nav>
+
+    <!-- 우측 버튼 영역 -->
+    <div class="flex items-center gap-2">
+      <!-- 로그인 (비로그인 상태) -->
+      <div id="auth-buttons" class="hidden md:flex items-center gap-2">
+        <button onclick="openAuth('login')" class="btn-ghost" style="padding: 7px 16px; font-size: 0.82rem;">로그인</button>
+        <button onclick="openAuth('signup')" class="btn-primary" style="padding: 7px 16px; font-size: 0.82rem;">회원가입</button>
+      </div>
+      <!-- 로그인 후 상태 -->
+      <div id="user-buttons" style="display:none;" class="md:flex items-center gap-2">
+        <button onclick="openModal()" class="btn-primary" style="padding: 7px 16px; font-size: 0.82rem;">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+          </svg>
+          사례 공유
+        </button>
+        <div style="position:relative;">
+          <button onclick="toggleUserMenu()" id="user-avatar" style="width:34px;height:34px;border-radius:50%;background:rgba(37,82,181,0.25);border:1px solid rgba(37,82,181,0.4);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#93C5FD;font-weight:700;font-size:0.82rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(37,82,181,0.4)'" onmouseout="this.style.background='rgba(37,82,181,0.25)'">
+            나
+          </button>
+          <div id="user-menu" style="display:none;position:absolute;right:0;top:42px;background:#0F172A;border:1px solid rgba(37,82,181,0.2);border-radius:10px;padding:8px;min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:50;">
+            <div style="padding:8px 12px;border-bottom:1px solid rgba(37,82,181,0.1);margin-bottom:4px;">
+              <div style="font-size:0.78rem;font-weight:700;color:#F1F5F9;" id="user-name-display">사용자</div>
+              <div style="font-size:0.7rem;color:#475569;" id="user-email-display"></div>
+            </div>
+            <button onclick="navigate('community');toggleUserMenu()" style="width:100%;text-align:left;padding:8px 12px;border-radius:6px;background:none;border:none;cursor:pointer;font-size:0.82rem;color:#94A3B8;font-family:inherit;transition:background 0.15s;" onmouseover="this.style.background='#1E293B'" onmouseout="this.style.background='none'">내 공유 사례</button>
+            <button onclick="logout()" style="width:100%;text-align:left;padding:8px 12px;border-radius:6px;background:none;border:none;cursor:pointer;font-size:0.82rem;color:#EF4444;font-family:inherit;transition:background 0.15s;" onmouseover="this.style.background='#1E293B'" onmouseout="this.style.background='none'">로그아웃</button>
+          </div>
+        </div>
+      </div>
+      <!-- 모바일 햄버거 -->
+      <button onclick="toggleMobile()" class="md:hidden text-slate-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 모바일 메뉴 -->
+  <div id="mobile-menu" class="hidden" style="border-top:1px solid rgba(37,82,181,0.1); background: rgba(7,12,21,0.97);">
+    <div style="padding:12px 20px; display:flex; flex-direction:column; gap:2px;">
+      <button class="tab-btn text-left active" data-page="home" onclick="navigate('home'); toggleMobile()">홈</button>
+      <button class="tab-btn text-left" data-page="tools" onclick="navigate('tools'); toggleMobile()">AI 도구</button>
+      <button class="tab-btn text-left" data-page="cases" onclick="navigate('cases'); toggleMobile()">활용 사례</button>
+      <button class="tab-btn text-left" data-page="tips" onclick="navigate('tips'); toggleMobile()">노하우 팁</button>
+      <button class="tab-btn text-left" data-page="community" onclick="navigate('community'); toggleMobile()">커뮤니티</button>
+      <hr style="border-color:rgba(37,82,181,0.1); margin:8px 0;">
+      <div id="mobile-auth-buttons">
+        <div style="display:flex;gap:8px;">
+          <button onclick="openAuth('login'); toggleMobile()" class="btn-ghost" style="flex:1;justify-content:center;padding:9px;">로그인</button>
+          <button onclick="openAuth('signup'); toggleMobile()" class="btn-primary" style="flex:1;justify-content:center;padding:9px;">회원가입</button>
+        </div>
+      </div>
+      <div id="mobile-user-buttons" style="display:none;">
+        <button onclick="openModal(); toggleMobile()" class="btn-primary w-full justify-center" style="padding:9px;">사례 공유하기</button>
+        <button onclick="logout()" style="width:100%;margin-top:6px;padding:9px;border-radius:8px;background:none;border:1px solid rgba(239,68,68,0.3);color:#EF4444;font-size:0.875rem;font-weight:600;cursor:pointer;font-family:inherit;">로그아웃</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════
+     페이지 1: 홈
+══════════════════════════════════ -->
+<div id="page-home" class="page active">
+  <!-- 히어로 -->
+  <div class="grid-bg relative overflow-hidden" style="padding: 72px 0 56px;">
+    <div class="hero-glow"></div>
+    <div class="content-wrap relative" style="padding-top:0; padding-bottom:0;">
+      <div class="fade-up" style="max-width:640px;">
+        <div class="badge badge-blue mb-4" style="font-size:0.7rem;">
+          <span style="width:6px;height:6px;background:#10B981;border-radius:50%;display:inline-block;margin-right:5px;"></span>
+          AllenCare AI 파일럿 프로그램
+        </div>
+        <h1 style="font-size:2.4rem; font-weight:800; color:#F1F5F9; line-height:1.25; margin-bottom:14px;">
+          AI, 어렵지 않습니다<br>
+          <span style="background:linear-gradient(135deg,#60A5FA,#2552B5); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">함께 배우고 나눠요</span>
+        </h1>
+        <p style="color:#64748B; font-size:1rem; line-height:1.7; margin-bottom:28px;">
+          임직원이 직접 발견한 AI 활용법을 공유하는 내부 지식 허브입니다.<br>
+          도구 소개부터 실무 적용 사례까지 — 검색하고, 읽고, 나눠주세요.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button onclick="navigate('tools')" class="btn-primary">AI 도구 둘러보기</button>
+          <button onclick="navigate('community')" class="btn-ghost">커뮤니티 보기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 통계 바 -->
+  <div style="background:#0F172A; border-top:1px solid rgba(37,82,181,0.1); border-bottom:1px solid rgba(37,82,181,0.1);">
+    <div class="content-wrap" style="padding-top:20px; padding-bottom:20px;">
+      <div style="display:flex; gap:40px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:1.5rem; font-weight:800; color:#93C5FD;">6개</div>
+          <div style="font-size:0.78rem; color:#475569; margin-top:2px;">주요 AI 도구</div>
+        </div>
+        <div style="width:1px; background:rgba(37,82,181,0.15);"></div>
+        <div>
+          <div style="font-size:1.5rem; font-weight:800; color:#93C5FD;">24개</div>
+          <div style="font-size:0.78rem; color:#475569; margin-top:2px;">활용 사례</div>
+        </div>
+        <div style="width:1px; background:rgba(37,82,181,0.15);"></div>
+        <div>
+          <div style="font-size:1.5rem; font-weight:800; color:#93C5FD;">48명</div>
+          <div style="font-size:0.78rem; color:#475569; margin-top:2px;">참여 임직원</div>
+        </div>
+        <div style="width:1px; background:rgba(37,82,181,0.15);"></div>
+        <div>
+          <div style="font-size:1.5rem; font-weight:800; color:#93C5FD;">주 2회</div>
+          <div style="font-size:0.78rem; color:#475569; margin-top:2px;">콘텐츠 업데이트</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 최신 콘텐츠 -->
+  <div class="content-wrap">
+    <div style="display:grid; grid-template-columns:1fr 320px; gap:40px; align-items:start;"
+         class="home-grid">
+
+      <!-- 좌: 최신 사례 -->
+      <div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;" class="fade-up delay-1">
+          <div>
+            <span class="section-eyebrow">LATEST</span>
+            <h2 class="section-title" style="font-size:1.25rem; margin-bottom:0;">최신 활용 사례</h2>
+          </div>
+          <button onclick="navigate('cases')" class="btn-ghost" style="font-size:0.78rem; padding:6px 14px;">
+            전체보기
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="card" style="overflow:hidden;" class="fade-up delay-1">
+          <!-- 포스트 목록 -->
+          <div class="post-row" onclick="navigate('cases')" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+            <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+              <span class="badge badge-blue">마케팅</span>
+              <span class="badge badge-green">Claude</span>
+            </div>
+            <div style="font-weight:700; color:#F1F5F9; font-size:0.95rem; margin-bottom:5px; line-height:1.4;">
+              뉴스레터 초안 작성 시간 80% 단축 — Claude 프롬프트 실전 가이드
+            </div>
+            <div style="color:#475569; font-size:0.8rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              매주 2시간씩 걸리던 뉴스레터 초안 작성을 Claude에게 맡겼습니다. 타겟 독자층, 핵심 메시지, 제품 정보를 프롬프트에 넣으면 30분 내로 3가지 버전의 초안이 나옵니다.
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+              <span style="font-size:0.75rem; color:#334155;">김○○ 팀장</span>
+              <span style="color:#334155; font-size:0.7rem;">·</span>
+              <span style="font-size:0.75rem; color:#334155;">2025.01.15</span>
+              <span style="color:#334155; font-size:0.7rem;">·</span>
+              <span style="font-size:0.75rem; color:#334155;">읽기 3분</span>
+            </div>
+          </div>
+
+          <div class="post-row" onclick="navigate('cases')" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+            <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+              <span class="badge badge-purple">HR</span>
+              <span class="badge badge-cyan">Perplexity</span>
+            </div>
+            <div style="font-weight:700; color:#F1F5F9; font-size:0.95rem; margin-bottom:5px; line-height:1.4;">
+              경쟁사 채용 트렌드 분석을 AI로 20분 만에 완료
+            </div>
+            <div style="color:#475569; font-size:0.8rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              Perplexity에 경쟁사 5곳의 최근 채용 공고 트렌드를 물어보니 직군별, 기술 스택별로 정리된 분석 결과와 함께 출처 링크까지 제공해줬습니다.
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+              <span style="font-size:0.75rem; color:#334155;">손○○ 매니저</span>
+              <span style="color:#334155; font-size:0.7rem;">·</span>
+              <span style="font-size:0.75rem; color:#334155;">2025.01.10</span>
+              <span style="color:#334155; font-size:0.7rem;">·</span>
+              <span style="font-size:0.75rem; color:#334155;">읽기 2분</span>
+            </div>
+          </div>
+
+          <div class="post-row" onclick="navigate('cases')">
+            <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+              <span class="badge badge-orange">영업</span>
+              <span class="badge badge-green">ChatGPT</span>
+            </div>
+            <div style="font-weight:700; color:#F1F5F9; font-size:0.95rem; margin-bottom:5px; line-height:1.4;">
+              고객사별 맞춤 제안서 자동화 — 영업 준비 시간 절반으로
+            </div>
+            <div style="color:#475569; font-size:0.8rem; line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+              고객사 업종, 규모, 주요 과제를 입력하면 그에 맞는 제안서 목차와 핵심 메시지를 자동 생성합니다.
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+              <span style="font-size:0.75rem; color:#334155;">허○○ 과장</span>
+              <span style="color:#334155; font-size:0.7rem;">·</span>
+              <span style="font-size:0.75rem; color:#334155;">2025.01.07</span>
+              <span style="color:#334155; font-size:0.7rem;">·</span>
+              <span style="font-size:0.75rem; color:#334155;">읽기 4분</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우: 사이드바 -->
+      <div style="display:flex; flex-direction:column; gap:20px;" class="fade-up delay-2">
+
+        <!-- 빠른 시작 -->
+        <div class="card" style="padding:20px;">
+          <h3 style="font-weight:700; color:#F1F5F9; font-size:0.9rem; margin-bottom:14px;">⚡ 빠른 시작</h3>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button onclick="navigate('tools')" style="text-align:left; padding:9px 12px; border-radius:7px; background:#1E293B; border:none; color:#94A3B8; font-size:0.83rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#1E293B'">
+              <span>🤖 AI 도구 둘러보기</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button onclick="navigate('tips')" style="text-align:left; padding:9px 12px; border-radius:7px; background:#1E293B; border:none; color:#94A3B8; font-size:0.83rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#1E293B'">
+              <span>💡 프롬프트 팁 보기</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button onclick="openModal()" style="text-align:left; padding:9px 12px; border-radius:7px; background:rgba(37,82,181,0.12); border:1px solid rgba(37,82,181,0.2); color:#93C5FD; font-size:0.83rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-family:inherit; transition:background 0.15s;" onmouseover="this.style.background='rgba(37,82,181,0.2)'" onmouseout="this.style.background='rgba(37,82,181,0.12)'">
+              <span>✍️ 내 사례 공유하기</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 인기 태그 -->
+        <div class="card" style="padding:20px;">
+          <h3 style="font-weight:700; color:#F1F5F9; font-size:0.9rem; margin-bottom:14px;">🏷️ 인기 태그</h3>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="badge badge-green" style="cursor:pointer;" onclick="navigate('cases')">ChatGPT</span>
+            <span class="badge badge-blue" style="cursor:pointer;" onclick="navigate('cases')">Claude</span>
+            <span class="badge badge-cyan" style="cursor:pointer;" onclick="navigate('cases')">Perplexity</span>
+            <span class="badge badge-orange" style="cursor:pointer;" onclick="navigate('cases')">업무자동화</span>
+            <span class="badge badge-purple" style="cursor:pointer;" onclick="navigate('cases')">문서작성</span>
+            <span class="badge badge-gray" style="cursor:pointer;" onclick="navigate('cases')">이미지생성</span>
+            <span class="badge badge-blue" style="cursor:pointer;" onclick="navigate('cases')">보고서</span>
+            <span class="badge badge-green" style="cursor:pointer;" onclick="navigate('cases')">마케팅</span>
+          </div>
+        </div>
+
+        <!-- 이 주의 팁 -->
+        <div style="background:rgba(37,82,181,0.08); border:1px solid rgba(37,82,181,0.2); border-radius:12px; padding:20px;">
+          <div style="font-size:0.7rem; font-weight:700; color:#2552B5; letter-spacing:0.1em; margin-bottom:8px;">THIS WEEK'S TIP</div>
+          <div style="font-weight:700; color:#F1F5F9; font-size:0.9rem; margin-bottom:6px;">역할 지정으로 답변 질 높이기</div>
+          <div style="color:#64748B; font-size:0.8rem; line-height:1.6; margin-bottom:12px;">
+            "10년 경력의 마케터처럼 답해줘" — 페르소나를 먼저 지정하면 훨씬 전문적인 답변이 나옵니다.
+          </div>
+          <button onclick="navigate('tips')" style="font-size:0.75rem; font-weight:600; color:#93C5FD; background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; gap:4px;">
+            더 많은 팁 보기
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     페이지 2: AI 도구
+══════════════════════════════════ -->
+<div id="page-tools" class="page">
+  <div class="content-wrap">
+    <!-- 헤더 -->
+    <div style="margin-bottom:32px;" class="fade-up">
+      <span class="section-eyebrow">AI TOOLS</span>
+      <h1 class="section-title">AI 도구 모음</h1>
+      <p class="section-desc">별도 설치 없이 바로 시작할 수 있는 주요 AI 도구들을 소개합니다.</p>
+    </div>
+
+    <!-- 검색 + 필터 -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:28px; flex-wrap:wrap;" class="fade-up delay-1">
+      <div style="position:relative; flex:1; min-width:200px;">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#334155;width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+        </svg>
+        <input type="text" placeholder="도구 검색..." class="input" style="padding-left:38px;" id="tool-search" oninput="filterToolCards()">
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="chip active" data-type="all" onclick="setToolFilter(this,'all')">전체</button>
+        <button class="chip" data-type="text" onclick="setToolFilter(this,'text')">텍스트</button>
+        <button class="chip" data-type="image" onclick="setToolFilter(this,'image')">이미지</button>
+        <button class="chip" data-type="code" onclick="setToolFilter(this,'code')">코드</button>
+        <button class="chip" data-type="search" onclick="setToolFilter(this,'search')">검색</button>
+      </div>
+    </div>
+
+    <!-- 도구 카드 그리드 -->
+    <div id="tool-cards" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px;" class="fade-up delay-2">
+
+      <div class="card tool-item" data-type="text" data-name="chatgpt" style="padding:24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(16,163,127,0.1);border:1px solid rgba(16,163,127,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🤖</div>
+            <div>
+              <div style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">ChatGPT</div>
+              <div style="font-size:0.72rem;color:#475569;margin-top:1px;">OpenAI</div>
+            </div>
+          </div>
+          <span class="badge badge-green">무료 가능</span>
+        </div>
+        <p style="color:#64748B;font-size:0.83rem;line-height:1.65;margin-bottom:14px;">대화형 AI의 대표 서비스. 이메일 작성, 요약, 번역, 아이디어 발상 등 텍스트 작업 전반에 탁월합니다.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;">
+          <span class="badge badge-gray">글쓰기</span>
+          <span class="badge badge-gray">요약</span>
+          <span class="badge badge-gray">번역</span>
+          <span class="badge badge-gray">브레인스토밍</span>
+        </div>
+        <div class="divider" style="margin-bottom:14px;"></div>
+        <a href="https://chatgpt.com" target="_blank" style="font-size:0.8rem;font-weight:600;color:#60A5FA;display:flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.color='#93C5FD'" onmouseout="this.style.color='#60A5FA'">
+          서비스 바로가기
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+
+      <div class="card tool-item" data-type="text" data-name="claude" style="padding:24px;border-color:rgba(37,82,181,0.25);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(37,82,181,0.15);border:1px solid rgba(37,82,181,0.3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">✨</div>
+            <div>
+              <div style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">Claude</div>
+              <div style="font-size:0.72rem;color:#475569;margin-top:1px;">Anthropic</div>
+            </div>
+          </div>
+          <span class="badge badge-blue">추천</span>
+        </div>
+        <p style="color:#64748B;font-size:0.83rem;line-height:1.65;margin-bottom:14px;">긴 문서 분석, 보고서 작성, 복잡한 논리가 필요한 업무에 강력합니다. 한국어 이해도가 매우 뛰어납니다.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;">
+          <span class="badge badge-gray">문서분석</span>
+          <span class="badge badge-gray">보고서</span>
+          <span class="badge badge-gray">코드</span>
+          <span class="badge badge-gray">논리추론</span>
+        </div>
+        <div class="divider" style="margin-bottom:14px;"></div>
+        <a href="https://claude.ai" target="_blank" style="font-size:0.8rem;font-weight:600;color:#60A5FA;display:flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.color='#93C5FD'" onmouseout="this.style.color='#60A5FA'">
+          서비스 바로가기
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+
+      <div class="card tool-item" data-type="text" data-name="gemini" style="padding:24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(66,133,244,0.1);border:1px solid rgba(66,133,244,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">💎</div>
+            <div>
+              <div style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">Google Gemini</div>
+              <div style="font-size:0.72rem;color:#475569;margin-top:1px;">Google</div>
+            </div>
+          </div>
+          <span class="badge badge-green">무료 가능</span>
+        </div>
+        <p style="color:#64748B;font-size:0.83rem;line-height:1.65;margin-bottom:14px;">구글 검색 연동 강점. 최신 정보 포함 답변이 필요하거나, Gmail·문서 등 구글 서비스 연계에 유용합니다.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;">
+          <span class="badge badge-gray">실시간검색</span>
+          <span class="badge badge-gray">구글연동</span>
+          <span class="badge badge-gray">멀티모달</span>
+        </div>
+        <div class="divider" style="margin-bottom:14px;"></div>
+        <a href="https://gemini.google.com" target="_blank" style="font-size:0.8rem;font-weight:600;color:#60A5FA;display:flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.color='#93C5FD'" onmouseout="this.style.color='#60A5FA'">
+          서비스 바로가기
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+
+      <div class="card tool-item" data-type="search" data-name="perplexity" style="padding:24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🔍</div>
+            <div>
+              <div style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">Perplexity AI</div>
+              <div style="font-size:0.72rem;color:#475569;margin-top:1px;">Perplexity AI</div>
+            </div>
+          </div>
+          <span class="badge badge-green">무료 가능</span>
+        </div>
+        <p style="color:#64748B;font-size:0.83rem;line-height:1.65;margin-bottom:14px;">AI 기반 검색 엔진. 출처를 명시하며 답변해 신뢰성이 높습니다. 시장 조사, 트렌드 파악에 최적입니다.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;">
+          <span class="badge badge-gray">리서치</span>
+          <span class="badge badge-gray">팩트체크</span>
+          <span class="badge badge-gray">출처명시</span>
+        </div>
+        <div class="divider" style="margin-bottom:14px;"></div>
+        <a href="https://perplexity.ai" target="_blank" style="font-size:0.8rem;font-weight:600;color:#60A5FA;display:flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.color='#93C5FD'" onmouseout="this.style.color='#60A5FA'">
+          서비스 바로가기
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+
+      <div class="card tool-item" data-type="image" data-name="midjourney" style="padding:24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎨</div>
+            <div>
+              <div style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">Midjourney</div>
+              <div style="font-size:0.72rem;color:#475569;margin-top:1px;">Midjourney Inc.</div>
+            </div>
+          </div>
+          <span class="badge badge-purple">유료</span>
+        </div>
+        <p style="color:#64748B;font-size:0.83rem;line-height:1.65;margin-bottom:14px;">텍스트로 고품질 이미지 생성. 프레젠테이션 삽화, SNS 콘텐츠, 마케팅 소재 제작 시간을 단축합니다.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;">
+          <span class="badge badge-gray">이미지생성</span>
+          <span class="badge badge-gray">디자인</span>
+          <span class="badge badge-gray">콘텐츠</span>
+        </div>
+        <div class="divider" style="margin-bottom:14px;"></div>
+        <a href="https://midjourney.com" target="_blank" style="font-size:0.8rem;font-weight:600;color:#60A5FA;display:flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.color='#93C5FD'" onmouseout="this.style.color='#60A5FA'">
+          서비스 바로가기
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+
+      <div class="card tool-item" data-type="code" data-name="copilot" style="padding:24px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(240,240,240,0.05);border:1px solid rgba(240,240,240,0.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">💻</div>
+            <div>
+              <div style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">GitHub Copilot</div>
+              <div style="font-size:0.72rem;color:#475569;margin-top:1px;">GitHub / Microsoft</div>
+            </div>
+          </div>
+          <span class="badge badge-orange">개발자용</span>
+        </div>
+        <p style="color:#64748B;font-size:0.83rem;line-height:1.65;margin-bottom:14px;">코드 자동 완성 AI. 반복 코드 생성, 버그 수정, 테스트 코드 작성으로 개발 생산성을 높입니다.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;">
+          <span class="badge badge-gray">코드완성</span>
+          <span class="badge badge-gray">버그수정</span>
+          <span class="badge badge-gray">리뷰</span>
+        </div>
+        <div class="divider" style="margin-bottom:14px;"></div>
+        <a href="https://github.com/features/copilot" target="_blank" style="font-size:0.8rem;font-weight:600;color:#60A5FA;display:flex;align-items:center;gap:4px;text-decoration:none;" onmouseover="this.style.color='#93C5FD'" onmouseout="this.style.color='#60A5FA'">
+          서비스 바로가기
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     페이지 3: 활용 사례
+══════════════════════════════════ -->
+<div id="page-cases" class="page">
+  <div class="content-wrap">
+    <div style="margin-bottom:32px;" class="fade-up">
+      <span class="section-eyebrow">USE CASES</span>
+      <h1 class="section-title">활용 사례</h1>
+      <p class="section-desc">임직원이 직접 경험하고 검증한 AI 활용 사례 모음입니다.</p>
+    </div>
+
+    <!-- 필터 -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:24px;" class="fade-up delay-1">
+      <button class="chip active" onclick="filterCases(this,'all')">전체</button>
+      <button class="chip" onclick="filterCases(this,'marketing')">마케팅</button>
+      <button class="chip" onclick="filterCases(this,'planning')">기획</button>
+      <button class="chip" onclick="filterCases(this,'hr')">HR</button>
+      <button class="chip" onclick="filterCases(this,'sales')">영업</button>
+      <button class="chip" onclick="filterCases(this,'ops')">운영</button>
+    </div>
+
+    <!-- 사례 목록 -->
+    <div id="cases-list" class="card" style="overflow:hidden;" class="fade-up delay-2">
+
+      <div class="post-row case-item" data-cat="marketing" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-blue">마케팅</span>
+          <span class="badge badge-green">Claude</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.15 · 읽기 3분</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:1rem;margin-bottom:8px;line-height:1.4;">뉴스레터 초안 작성 시간 80% 단축 — Claude 프롬프트 실전 가이드</h3>
+        <p style="color:#475569;font-size:0.83rem;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          매주 2시간씩 걸리던 뉴스레터 초안 작성을 Claude에게 맡겼습니다. 타겟 독자층, 핵심 메시지, 제품 정보를 프롬프트에 넣으면 30분 내로 3가지 버전의 초안이 나옵니다. 최종 검토와 수정만 하면 돼 전략적 업무에 집중할 수 있게 됐습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,82,181,0.2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#93C5FD;">K</div>
+          <span style="font-size:0.78rem;color:#64748B;">김○○ 팀장 · 마케팅팀</span>
+          <div style="margin-left:auto;font-size:0.75rem;color:#334155;display:flex;align-items:center;gap:4px;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            24
+          </div>
+        </div>
+      </div>
+
+      <div class="post-row case-item" data-cat="planning" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-purple">기획</span>
+          <span class="badge badge-cyan">ChatGPT</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.10 · 읽기 4분</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:1rem;margin-bottom:8px;line-height:1.4;">분기 사업 보고서 목차 및 초안, 반나절로 줄이기</h3>
+        <p style="color:#475569;font-size:0.83rem;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          ChatGPT에게 "작년 대비 성장률 15%, 신규 거래처 8곳, 주요 이슈 3개"를 입력하니 전체 목차와 각 섹션 초안을 한 번에 만들어줬습니다. 이후 수치만 채워 넣었더니 2일 걸리던 작업이 반나절이 됐습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#C4B5FD;">L</div>
+          <span style="font-size:0.78rem;color:#64748B;">이○○ 과장 · 전략기획팀</span>
+          <div style="margin-left:auto;font-size:0.75rem;color:#334155;display:flex;align-items:center;gap:4px;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            19
+          </div>
+        </div>
+      </div>
+
+      <div class="post-row case-item" data-cat="ops" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-cyan">운영</span>
+          <span class="badge badge-green">Gemini</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.07 · 읽기 2분</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:1rem;margin-bottom:8px;line-height:1.4;">회의록 자동 요약으로 팔로업 시간 절감</h3>
+        <p style="color:#475569;font-size:0.83rem;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          1시간짜리 회의 녹취를 Gemini에 붙여 넣고 "결정 사항, 액션 아이템, 담당자별 할 일 목록으로 요약해줘"라고 하니 5분 만에 완벽한 회의록이 나왔습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(6,182,212,0.1);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#67E8F9;">P</div>
+          <span style="font-size:0.78rem;color:#64748B;">박○○ 대리 · 운영팀</span>
+          <div style="margin-left:auto;font-size:0.75rem;color:#334155;display:flex;align-items:center;gap:4px;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            31
+          </div>
+        </div>
+      </div>
+
+      <div class="post-row case-item" data-cat="hr" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-orange">HR</span>
+          <span class="badge badge-green">Claude</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.04 · 읽기 3분</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:1rem;margin-bottom:8px;line-height:1.4;">채용 공고문 5분 만에 전문가급으로 완성하기</h3>
+        <p style="color:#475569;font-size:0.83rem;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          "프론트엔드 개발자 채용, 3년 이상 경력, React 필수, 원격 근무 가능"이라고 입력하자 직무 설명, 자격 요건, 우대 사항, 복리후생까지 구조화된 채용 공고가 완성됐습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(249,115,22,0.1);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#FDBA74;">C</div>
+          <span style="font-size:0.78rem;color:#64748B;">최○○ 매니저 · 인사팀</span>
+          <div style="margin-left:auto;font-size:0.75rem;color:#334155;display:flex;align-items:center;gap:4px;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            17
+          </div>
+        </div>
+      </div>
+
+      <div class="post-row case-item" data-cat="sales">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-green">영업</span>
+          <span class="badge badge-green">ChatGPT</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2024.12.27 · 읽기 5분</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:1rem;margin-bottom:8px;line-height:1.4;">고객사별 맞춤 제안서 자동화 — 준비 시간을 절반으로</h3>
+        <p style="color:#475569;font-size:0.83rem;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          고객사 업종, 규모, 주요 과제를 입력하면 그에 맞는 제안서 목차와 핵심 메시지가 자동 생성됩니다. 영업 준비 시간이 절반으로 줄었습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#6EE7B7;">H</div>
+          <span style="font-size:0.78rem;color:#64748B;">허○○ 과장 · 영업팀</span>
+          <div style="margin-left:auto;font-size:0.75rem;color:#334155;display:flex;align-items:center;gap:4px;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            22
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     페이지 4: 노하우 팁
+══════════════════════════════════ -->
+<div id="page-tips" class="page">
+  <div class="content-wrap">
+    <div style="margin-bottom:32px;" class="fade-up">
+      <span class="section-eyebrow">HOW-TO</span>
+      <h1 class="section-title">노하우 팁</h1>
+      <p class="section-desc">AI를 더 잘 활용하기 위한 실용 가이드와 프롬프트 작성법입니다.</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 280px; gap:32px; align-items:start;">
+
+      <!-- 팁 목록 -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- 팁 아코디언 아이템들 -->
+        <div class="card fade-up">
+          <button onclick="toggleTip(this)" style="width:100%;text-align:left;padding:20px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:#2552B5;min-width:28px;">01</span>
+              <span style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">역할(페르소나) 먼저 지정하기</span>
+            </div>
+            <svg class="tip-arrow" style="width:16px;height:16px;color:#475569;flex-shrink:0;transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="tip-body" style="display:none; padding:0 24px 20px; padding-left:66px;">
+            <p style="color:#64748B;font-size:0.85rem;line-height:1.7;margin-bottom:14px;">
+              "10년 경력의 마케터처럼 답해줘"처럼 역할을 먼저 정의하면 훨씬 전문적이고 상황에 맞는 답변이 나옵니다. AI는 역할에 따라 사용하는 어휘, 깊이, 관점이 달라집니다.
+            </p>
+            <div style="background:#070C15;border:1px solid rgba(37,82,181,0.15);border-radius:8px;padding:14px;font-family:monospace;font-size:0.8rem;color:#94A3B8;line-height:1.7;">
+              <span style="color:#475569;"># 예시 프롬프트</span><br>
+              <span style="color:#93C5FD;">당신은 B2B SaaS 마케팅 10년 경력의 전문가입니다.</span><br>
+              우리 제품의 LinkedIn 광고 문구 3가지를 작성해주세요.
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-up delay-1">
+          <button onclick="toggleTip(this)" style="width:100%;text-align:left;padding:20px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:#2552B5;min-width:28px;">02</span>
+              <span style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">출력 형식을 구체적으로 지정하기</span>
+            </div>
+            <svg class="tip-arrow" style="width:16px;height:16px;color:#475569;flex-shrink:0;transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="tip-body" style="display:none; padding:0 24px 20px; padding-left:66px;">
+            <p style="color:#64748B;font-size:0.85rem;line-height:1.7;margin-bottom:14px;">
+              "3개 항목으로", "표 형식으로", "300자 이내로"처럼 형식을 명시하면 바로 복사해서 쓸 수 있는 결과물이 나옵니다. 형식 지정 없이 요청하면 불필요하게 길어질 수 있습니다.
+            </p>
+            <div style="background:#070C15;border:1px solid rgba(37,82,181,0.15);border-radius:8px;padding:14px;font-family:monospace;font-size:0.8rem;color:#94A3B8;line-height:1.7;">
+              <span style="color:#475569;"># 형식 지정 예시</span><br>
+              아래 내용을 <span style="color:#6EE7B7;">불릿 포인트 5개</span>로, <span style="color:#6EE7B7;">각 항목 50자 이내</span>로 요약해줘.<br>
+              <span style="color:#6EE7B7;">표 형식</span>으로 정리하되 열은 항목/설명/우선순위로 구성해줘.
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-up delay-2">
+          <button onclick="toggleTip(this)" style="width:100%;text-align:left;padding:20px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:#2552B5;min-width:28px;">03</span>
+              <span style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">맥락 정보를 충분히 제공하기</span>
+            </div>
+            <svg class="tip-arrow" style="width:16px;height:16px;color:#475569;flex-shrink:0;transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="tip-body" style="display:none; padding:0 24px 20px; padding-left:66px;">
+            <p style="color:#64748B;font-size:0.85rem;line-height:1.7;margin-bottom:14px;">
+              "이메일 써줘"보다 "B2B 고객 대상, 계약 갱신 독려 목적, 정중하고 간결하게, 200자 내외"처럼 상황을 설명할수록 정확한 결과가 나옵니다. 맥락이 많을수록 AI는 더 정확해집니다.
+            </p>
+            <div style="background:#070C15;border:1px solid rgba(37,82,181,0.15);border-radius:8px;padding:14px;font-family:monospace;font-size:0.8rem;color:#94A3B8;line-height:1.7;">
+              <span style="color:#475569;"># 좋은 프롬프트 = 역할 + 상황 + 과제 + 형식</span><br>
+              <span style="color:#93C5FD;">[역할]</span> 10년 경력 B2B 영업 전문가<br>
+              <span style="color:#6EE7B7;">[상황]</span> HR SaaS 솔루션 판매, 중소기업 대상<br>
+              <span style="color:#C4B5FD;">[과제]</span> 신규 리드 첫 콜드 이메일 작성<br>
+              <span style="color:#FDBA74;">[형식]</span> 제목 1줄 + 본문 150자 + CTA 1개, 3가지 버전
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-up delay-3">
+          <button onclick="toggleTip(this)" style="width:100%;text-align:left;padding:20px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:#2552B5;min-width:28px;">04</span>
+              <span style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">이어서 수정 요청하기 (대화 활용)</span>
+            </div>
+            <svg class="tip-arrow" style="width:16px;height:16px;color:#475569;flex-shrink:0;transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="tip-body" style="display:none; padding:0 24px 20px; padding-left:66px;">
+            <p style="color:#64748B;font-size:0.85rem;line-height:1.7;margin-bottom:14px;">
+              첫 답변에 만족하지 말고 이어서 수정 요청하세요. "더 간결하게", "공격적인 마케팅 톤으로", "전문 용어 빼고"처럼 피드백하면 점점 원하는 결과가 됩니다.
+            </p>
+            <div style="background:#070C15;border:1px solid rgba(37,82,181,0.15);border-radius:8px;padding:14px;font-family:monospace;font-size:0.8rem;color:#94A3B8;line-height:1.7;">
+              <span style="color:#475569;"># 이어서 수정하는 방법</span><br>
+              → "더 짧게 줄여줘" (절반 길이로)<br>
+              → "2번 버전을 더 부드러운 톤으로 바꿔줘"<br>
+              → "수치를 더 강조하고 감정적 표현 줄여줘"
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-up delay-4">
+          <button onclick="toggleTip(this)" style="width:100%;text-align:left;padding:20px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="font-family:monospace;font-size:0.78rem;font-weight:700;color:#2552B5;min-width:28px;">05</span>
+              <span style="font-weight:700;color:#F1F5F9;font-size:0.95rem;">중요한 사실은 반드시 검증하기</span>
+            </div>
+            <svg class="tip-arrow" style="width:16px;height:16px;color:#475569;flex-shrink:0;transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="tip-body" style="display:none; padding:0 24px 20px; padding-left:66px;">
+            <p style="color:#64748B;font-size:0.85rem;line-height:1.7;">
+              AI는 틀린 정보를 자신 있게 말하기도 합니다 (할루시네이션). 수치, 통계, 법률 정보, 인용문은 반드시 원본 출처를 확인하세요. AI는 초안 도구이지 최종 검증 도구가 아닙니다.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 사이드: 실전 프롬프트 -->
+      <div style="display:flex;flex-direction:column;gap:16px;" class="fade-up delay-2">
+        <div class="card" style="padding:20px;">
+          <h3 style="font-weight:700;color:#F1F5F9;font-size:0.9rem;margin-bottom:4px;">🧩 직군별 프롬프트 모음</h3>
+          <p style="font-size:0.75rem;color:#475569;margin-bottom:14px;">바로 복사해서 쓰는 프롬프트</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="padding:10px;background:#1E293B;border-radius:7px;font-size:0.78rem;color:#94A3B8;line-height:1.5;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#1E293B'" onclick="copyPrompt(this,'당신은 마케팅 전문가입니다. 아래 제품의 인스타그램 광고 문구 3개를 작성해주세요. [제품명], [타겟], [핵심 혜택]')">
+              <div style="font-size:0.7rem;color:#2552B5;font-weight:700;margin-bottom:4px;">마케팅</div>
+              인스타 광고 문구 3개 작성
+            </div>
+            <div style="padding:10px;background:#1E293B;border-radius:7px;font-size:0.78rem;color:#94A3B8;line-height:1.5;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#1E293B'" onclick="copyPrompt(this,'아래 내용을 바탕으로 경영진 보고용 요약문을 작성해주세요. 결론 먼저, 핵심 수치 포함, 300자 이내. [내용]')">
+              <div style="font-size:0.7rem;color:#2552B5;font-weight:700;margin-bottom:4px;">기획/보고</div>
+              경영진 보고 요약문
+            </div>
+            <div style="padding:10px;background:#1E293B;border-radius:7px;font-size:0.78rem;color:#94A3B8;line-height:1.5;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#1E293B'" onclick="copyPrompt(this,'아래 회의 내용을 ① 결정 사항 ② 액션 아이템 ③ 담당자별 할 일 목록으로 정리해주세요. [녹취 내용]')">
+              <div style="font-size:0.7rem;color:#2552B5;font-weight:700;margin-bottom:4px;">운영</div>
+              회의록 자동 정리
+            </div>
+            <div style="padding:10px;background:#1E293B;border-radius:7px;font-size:0.78rem;color:#94A3B8;line-height:1.5;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='#1E293B'" onclick="copyPrompt(this,'[직무명] 채용 공고를 작성해주세요. 직무설명, 자격요건(필수/우대), 복리후생 순서로 구성해주세요.')">
+              <div style="font-size:0.7rem;color:#2552B5;font-weight:700;margin-bottom:4px;">HR</div>
+              채용 공고 작성
+            </div>
+          </div>
+          <p style="font-size:0.7rem;color:#334155;margin-top:10px;text-align:center;">클릭하면 복사됩니다</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     페이지 5: 커뮤니티
+══════════════════════════════════ -->
+<div id="page-community" class="page">
+  <div class="content-wrap">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:32px;flex-wrap:wrap;" class="fade-up">
+      <div>
+        <span class="section-eyebrow">COMMUNITY</span>
+        <h1 class="section-title">커뮤니티</h1>
+        <p class="section-desc">발견한 AI 활용법을 자유롭게 공유하고, 동료의 노하우를 배워가세요.</p>
+      </div>
+      <button onclick="openModal()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+        사례 공유하기
+      </button>
+    </div>
+
+    <!-- 검색 -->
+    <div style="position:relative;max-width:480px;margin-bottom:24px;" class="fade-up delay-1">
+      <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#334155;width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+      </svg>
+      <input type="text" placeholder="키워드 검색..." class="input" style="padding-left:38px;">
+    </div>
+
+    <!-- 커뮤니티 포스트 목록 -->
+    <div class="card" id="community-posts-card" style="overflow:hidden;">
+
+      <div class="post-row" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-blue">마케팅</span>
+          <span class="badge badge-green">Claude</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.15</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:0.95rem;margin-bottom:6px;line-height:1.4;">SNS 콘텐츠 캘린더 한 달치를 30분 만에 완성했습니다</h3>
+        <p style="color:#475569;font-size:0.82rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          브랜드 톤, 타겟 연령대, 주력 제품 카테고리를 프롬프트에 담아 요청했더니 인스타그램, 블로그, 카카오채널용으로 각각 다르게 작성된 30일치 콘텐츠 아이디어가 나왔습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,82,181,0.2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#93C5FD;">J</div>
+          <span style="font-size:0.78rem;color:#64748B;">정○○</span>
+          <span style="color:#334155;font-size:0.7rem;">·</span>
+          <span style="font-size:0.75rem;color:#334155;">조회 187</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#334155;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            24
+          </div>
+        </div>
+      </div>
+
+      <div class="post-row" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-purple">HR</span>
+          <span class="badge badge-cyan">Perplexity</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.10</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:0.95rem;margin-bottom:6px;line-height:1.4;">경쟁사 채용 트렌드 분석을 AI로 20분 만에 완료</h3>
+        <p style="color:#475569;font-size:0.82rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          Perplexity에 경쟁사 5곳의 최근 채용 공고 트렌드를 물어보니 직군별, 기술 스택별로 정리된 분석 결과와 함께 출처 링크까지 제공해줬습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#C4B5FD;">S</div>
+          <span style="font-size:0.78rem;color:#64748B;">손○○</span>
+          <span style="color:#334155;font-size:0.7rem;">·</span>
+          <span style="font-size:0.75rem;color:#334155;">조회 143</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#334155;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            19
+          </div>
+        </div>
+      </div>
+
+      <div class="post-row" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="badge badge-orange">영업</span>
+          <span class="badge badge-green">ChatGPT</span>
+          <span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.07</span>
+        </div>
+        <h3 style="font-weight:700;color:#F1F5F9;font-size:0.95rem;margin-bottom:6px;line-height:1.4;">고객사별 맞춤 제안서 템플릿 자동화 노하우 공유</h3>
+        <p style="color:#475569;font-size:0.82rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          고객사 업종, 규모, 주요 과제를 입력하면 제안서 목차와 핵심 메시지를 자동 생성합니다. 영업 준비 시간이 절반으로 줄었습니다.
+        </p>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:rgba(249,115,22,0.12);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#FDBA74;">H</div>
+          <span style="font-size:0.78km;color:#64748B;">허○○</span>
+          <span style="color:#334155;font-size:0.7rem;">·</span>
+          <span style="font-size:0.75rem;color:#334155;">조회 218</span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#334155;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            31
+          </div>
+        </div>
+      </div>
+
+      <!-- 빈 상태 안내 (숨김) -->
+      <div id="community-empty" style="display:none; padding:48px;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:12px;">✍️</div>
+        <div style="font-weight:700;color:#F1F5F9;margin-bottom:6px;">아직 글이 없어요</div>
+        <div style="font-size:0.83rem;color:#475569;margin-bottom:16px;">첫 번째로 AI 활용 경험을 공유해보세요!</div>
+        <button onclick="openModal()" class="btn-primary" style="margin:0 auto;">사례 공유하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     모달: 사례 공유
+══════════════════════════════════ -->
+<div id="share-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <h2 style="font-weight:800;color:#F1F5F9;font-size:1.1rem;">AI 활용 사례 공유</h2>
+        <p style="font-size:0.78rem;color:#475569;margin-top:3px;">동료들에게 도움이 될 경험을 나눠주세요</p>
+      </div>
+      <button onclick="closeModal()" style="width:32px;height:32px;border-radius:8px;background:#1E293B;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748B;transition:all 0.15s;" onmouseover="this.style.background='#334155';this.style.color='#F1F5F9'" onmouseout="this.style.background='#1E293B';this.style.color='#64748B'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <form onsubmit="submitCase(event)" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">이름 (익명 가능)</label>
+          <input type="text" placeholder="홍○○" class="input" id="post-author">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">직군</label>
+          <select class="input" style="cursor:pointer;" id="post-dept">
+            <option value="">선택하세요</option>
+            <option>마케팅</option><option>기획</option><option>HR</option>
+            <option>영업</option><option>개발</option><option>운영</option><option>기타</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:0.78rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:8px;">사용한 AI 도구</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;" id="tool-tags">
+          <button type="button" class="chip" onclick="toggleToolTag(this)">ChatGPT</button>
+          <button type="button" class="chip" onclick="toggleToolTag(this)">Claude</button>
+          <button type="button" class="chip" onclick="toggleToolTag(this)">Gemini</button>
+          <button type="button" class="chip" onclick="toggleToolTag(this)">Perplexity</button>
+          <button type="button" class="chip" onclick="toggleToolTag(this)">기타</button>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:0.78rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">제목</label>
+        <input type="text" placeholder="예: 회의록 자동화로 주간 2시간 아꼈어요" class="input" id="post-title" required>
+      </div>
+
+      <div>
+        <label style="font-size:0.78rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">활용 내용 및 결과</label>
+        <textarea class="input" style="min-height:110px;resize:vertical;" placeholder="어떤 상황에서, 어떻게 AI를 활용했고, 어떤 효과가 있었는지 자유롭게 써주세요." id="post-content" required></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;padding-top:4px;">
+        <button type="button" onclick="closeModal()" class="btn-ghost" style="flex:1;justify-content:center;">취소</button>
+        <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">
+          공유하기
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     모달: 로그인 / 회원가입
+══════════════════════════════════ -->
+<div id="auth-modal" class="modal-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="modal-box" style="max-width:420px;">
+
+    <!-- 탭 -->
+    <div style="display:flex;background:#1E293B;border-radius:10px;padding:4px;margin-bottom:24px;">
+      <button id="tab-login" onclick="switchAuthTab('login')"
+        style="flex:1;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:0.875rem;font-weight:700;font-family:inherit;transition:all 0.2s;background:#2552B5;color:#fff;">
+        로그인
+      </button>
+      <button id="tab-signup" onclick="switchAuthTab('signup')"
+        style="flex:1;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:0.875rem;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:#64748B;">
+        회원가입
+      </button>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <form id="form-login" onsubmit="handleLogin(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="text-align:center;margin-bottom:4px;">
+        <h2 style="font-weight:800;color:#F1F5F9;font-size:1.15rem;margin-bottom:4px;">다시 오셨군요!</h2>
+        <p style="font-size:0.78rem;color:#475569;">AllenCare AI Hub에 로그인하세요</p>
+      </div>
+
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">이메일</label>
+        <input type="email" placeholder="이메일 주소" class="input" id="login-email" required>
+      </div>
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">비밀번호</label>
+        <div style="position:relative;">
+          <input type="password" placeholder="비밀번호" class="input" id="login-pw" required style="padding-right:40px;">
+          <button type="button" onclick="togglePw('login-pw')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569;" onmouseover="this.style.color='#94A3B8'" onmouseout="this.style.color='#475569'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="login-error" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#FCA5A5;"></div>
+
+      <button type="submit" class="btn-primary" style="justify-content:center;padding:11px;">
+        로그인
+      </button>
+
+      <div style="text-align:center;font-size:0.78rem;color:#475569;">
+        계정이 없으신가요?
+        <button type="button" onclick="switchAuthTab('signup')" style="background:none;border:none;color:#93C5FD;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:inherit;">회원가입</button>
+      </div>
+    </form>
+
+    <!-- 회원가입 폼 -->
+    <form id="form-signup" onsubmit="handleSignup(event)" style="display:none;flex-direction:column;gap:14px;">
+      <div style="text-align:center;margin-bottom:4px;">
+        <h2 style="font-weight:800;color:#F1F5F9;font-size:1.15rem;margin-bottom:4px;">함께해요!</h2>
+        <p style="font-size:0.78rem;color:#475569;">AI 활용 지식을 함께 나눠봐요</p>
+      </div>
+
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">이름</label>
+        <input type="text" placeholder="이름 또는 닉네임" class="input" id="signup-name" required>
+      </div>
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">이메일</label>
+        <input type="email" placeholder="이메일 주소" class="input" id="signup-email" required>
+      </div>
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">소속 부서 <span style="color:#334155;font-weight:400;">(선택)</span></label>
+        <select class="input" id="signup-dept" style="cursor:pointer;">
+          <option value="">선택 안 함</option>
+          <option>마케팅팀</option><option>전략기획팀</option><option>HR팀</option>
+          <option>영업팀</option><option>개발팀</option><option>운영팀</option><option>기타</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">비밀번호</label>
+        <div style="position:relative;">
+          <input type="password" placeholder="8자 이상" class="input" id="signup-pw" required style="padding-right:40px;" oninput="checkPwStrength(this.value)">
+          <button type="button" onclick="togglePw('signup-pw')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569;" onmouseover="this.style.color='#94A3B8'" onmouseout="this.style.color='#475569'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+        <!-- 비밀번호 강도 -->
+        <div style="display:flex;gap:4px;margin-top:6px;" id="pw-strength-bars">
+          <div style="flex:1;height:3px;border-radius:2px;background:#1E293B;" id="bar1"></div>
+          <div style="flex:1;height:3px;border-radius:2px;background:#1E293B;" id="bar2"></div>
+          <div style="flex:1;height:3px;border-radius:2px;background:#1E293B;" id="bar3"></div>
+          <div style="flex:1;height:3px;border-radius:2px;background:#1E293B;" id="bar4"></div>
+        </div>
+        <div style="font-size:0.7rem;color:#334155;margin-top:3px;" id="pw-strength-text"></div>
+      </div>
+      <div>
+        <label style="font-size:0.75rem;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;">비밀번호 확인</label>
+        <input type="password" placeholder="비밀번호 재입력" class="input" id="signup-pw-confirm" required>
+      </div>
+
+      <!-- 약관 동의 -->
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+        <input type="checkbox" id="agree-terms" style="margin-top:2px;accent-color:#2552B5;" required>
+        <span style="font-size:0.75rem;color:#64748B;line-height:1.5;">
+          내부 AI 활용 지식 공유 플랫폼의
+          <span style="color:#93C5FD;">이용약관</span> 및
+          <span style="color:#93C5FD;">개인정보 처리방침</span>에 동의합니다.
+        </span>
+      </label>
+
+      <div id="signup-error" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:10px 14px;font-size:0.78rem;color:#FCA5A5;"></div>
+
+      <button type="submit" class="btn-primary" style="justify-content:center;padding:11px;">
+        회원가입 완료
+      </button>
+
+      <div style="text-align:center;font-size:0.78rem;color:#475569;">
+        이미 계정이 있으신가요?
+        <button type="button" onclick="switchAuthTab('login')" style="background:none;border:none;color:#93C5FD;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:inherit;">로그인</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+<!-- 토스트 -->
+<div id="toast" class="toast">
+  <svg style="width:16px;height:16px;color:#6EE7B7;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  <span id="toast-msg"></span>
+</div>
+
+
+<script>
+// ── Supabase 초기화 ──
+const SUPABASE_URL  = 'https://irzqwyofjlftohcwsfho.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyenF3eW9mamxmdG9oY3dzZmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzM2NTQsImV4cCI6MjA5NDYwOTY1NH0.aFvqO4iUlVGx_TL9i-MpME0kdB-TerADNOgQmh6D7ug';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── 페이지 라우팅 ──
+function navigate(pageId) {
+  // 모든 페이지 숨기기
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // 해당 페이지 보이기
+  document.getElementById('page-' + pageId).classList.add('active');
+  // 탭 활성화 (상단 + 모바일 모두)
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === pageId);
+  });
+  // 스크롤 맨 위로
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 페이드 애니메이션 재실행
+  const page = document.getElementById('page-' + pageId);
+  page.querySelectorAll('.fade-up').forEach((el, i) => {
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = '';
+  });
+}
+
+// ── 모바일 메뉴 ──
+function toggleMobile() {
+  const m = document.getElementById('mobile-menu');
+  m.classList.toggle('hidden');
+}
+
+// ── 모달 ──
+function openModal() { document.getElementById('share-modal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal() { document.getElementById('share-modal').classList.remove('open'); document.body.style.overflow=''; }
+
+// ── 토스트 ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── 사례 제출 (Supabase) ──
+async function submitCase(e) {
+  e.preventDefault();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { closeModal(); openAuth('login'); showToast('로그인 후 사례를 공유할 수 있습니다.'); return; }
+
+  const tools = [...document.querySelectorAll('#tool-tags .chip.active')].map(b => b.textContent.trim());
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.textContent = '등록 중...'; btn.disabled = true;
+
+  const { error } = await sb.from('posts').insert({
+    user_id:     user.id,
+    author_name: document.getElementById('post-author').value || '익명',
+    department:  document.getElementById('post-dept').value,
+    title:       document.getElementById('post-title').value,
+    content:     document.getElementById('post-content').value,
+    ai_tool:     tools,
+    category:    document.getElementById('post-dept').value,
+  });
+
+  btn.textContent = '공유하기'; btn.disabled = false;
+  if (error) { showToast('저장 중 오류가 발생했습니다.'); return; }
+
+  // 관리자 이메일 알림 (실패해도 게시글 등록에 영향 없음)
+  try {
+    await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title:       document.getElementById('post-title').value,
+        author_name: document.getElementById('post-author').value || '익명',
+        department:  document.getElementById('post-dept').value,
+        content:     document.getElementById('post-content').value,
+      }),
+    });
+  } catch (_) {}
+
+  closeModal();
+  e.target.reset();
+  document.querySelectorAll('#tool-tags .chip').forEach(b => b.classList.remove('active'));
+  showToast('사례가 등록됐습니다! 🎉');
+  loadPosts();
+}
+
+// ── 도구 필터 ──
+let currentToolFilter = 'all';
+function setToolFilter(btn, type) {
+  currentToolFilter = type;
+  document.querySelectorAll('#page-tools .chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterToolCards();
+}
+function filterToolCards() {
+  const q = (document.getElementById('tool-search')?.value || '').toLowerCase();
+  document.querySelectorAll('.tool-item').forEach(card => {
+    const matchType = currentToolFilter === 'all' || card.dataset.type === currentToolFilter;
+    const matchSearch = !q || card.dataset.name.includes(q) || card.textContent.toLowerCase().includes(q);
+    card.parentElement.style.display = (matchType && matchSearch) ? '' : 'none';
+  });
+}
+
+// ── 사례 필터 ──
+function filterCases(btn, cat) {
+  document.querySelectorAll('#page-cases .chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.case-item').forEach(item => {
+    item.style.display = (cat === 'all' || item.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+// ── 팁 토글 ──
+function toggleTip(btn) {
+  const body = btn.nextElementSibling;
+  const arrow = btn.querySelector('.tip-arrow');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+// ── 도구 태그 토글 ──
+function toggleToolTag(btn) {
+  btn.classList.toggle('active');
+}
+
+// ── 프롬프트 복사 ──
+function copyPrompt(el, text) {
+  navigator.clipboard.writeText(text).then(() => showToast('프롬프트가 복사됐습니다!'));
+}
+
+// ── 인증 모달 ──
+function openAuth(tab) {
+  switchAuthTab(tab);
+  document.getElementById('auth-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuth() {
+  document.getElementById('auth-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('form-login').style.display = isLogin ? 'flex' : 'none';
+  document.getElementById('form-signup').style.display = isLogin ? 'none' : 'flex';
+  document.getElementById('tab-login').style.background = isLogin ? '#2552B5' : 'transparent';
+  document.getElementById('tab-login').style.color = isLogin ? '#fff' : '#64748B';
+  document.getElementById('tab-signup').style.background = isLogin ? 'transparent' : '#2552B5';
+  document.getElementById('tab-signup').style.color = isLogin ? '#64748B' : '#fff';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('signup-error').style.display = 'none';
+}
+
+// ── 로그인 처리 (UI 시뮬레이션) ──
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const pw    = document.getElementById('login-pw').value;
+  const err   = document.getElementById('login-error');
+  const btn   = e.target.querySelector('button[type=submit]');
+  btn.textContent = '로그인 중...'; btn.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+
+  btn.textContent = '로그인'; btn.disabled = false;
+  if (error) {
+    if (error.message.includes('Email not confirmed') || error.message.includes('not confirmed')) {
+      err.textContent = '이메일 인증이 필요합니다. Supabase 대시보드 → Authentication → Sign In/Up → Confirm email OFF 후 재시도해주세요.';
+    } else if (error.message.includes('Invalid login credentials') || error.message.includes('invalid')) {
+      err.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+    } else {
+      err.textContent = error.message;
+    }
+    err.style.display = 'block'; return;
+  }
+  const name = data.user.user_metadata?.name || email.split('@')[0];
+  loginSuccess(name, email);
+}
+
+// ── 회원가입 처리 (UI 시뮬레이션) ──
+async function handleSignup(e) {
+  e.preventDefault();
+  const name  = document.getElementById('signup-name').value;
+  const email = document.getElementById('signup-email').value;
+  const dept  = document.getElementById('signup-dept').value;
+  const pw    = document.getElementById('signup-pw').value;
+  const pw2   = document.getElementById('signup-pw-confirm').value;
+  const err   = document.getElementById('signup-error');
+  const btn   = e.target.querySelector('button[type=submit]');
+
+  if (pw.length < 8) { err.textContent = '비밀번호는 8자 이상이어야 합니다.'; err.style.display = 'block'; return; }
+  if (pw !== pw2)    { err.textContent = '비밀번호가 일치하지 않습니다.';     err.style.display = 'block'; return; }
+
+  btn.textContent = '처리 중...'; btn.disabled = true;
+  const { data, error } = await sb.auth.signUp({
+    email, password: pw,
+    options: { data: { name, department: dept } }
+  });
+  btn.textContent = '회원가입 완료'; btn.disabled = false;
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  loginSuccess(name, email);
+}
+
+// ── 로그인 성공 UI 전환 ──
+function loginSuccess(name, email) {
+  loginSuccessQuiet(name, email);
+  showToast(`${name}님, 환영합니다! 🎉`);
+}
+
+// ── 로그아웃 (Supabase) ──
+async function logout() {
+  await sb.auth.signOut();
+  document.getElementById('auth-buttons').style.display = '';
+  document.getElementById('user-buttons').style.display = 'none';
+  document.getElementById('mobile-auth-buttons').style.display = '';
+  document.getElementById('mobile-user-buttons').style.display = 'none';
+  document.getElementById('user-menu').style.display = 'none';
+  showToast('로그아웃 되었습니다.');
+}
+
+// ── 유저 드롭다운 메뉴 ──
+function toggleUserMenu() {
+  const m = document.getElementById('user-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#user-avatar') && !e.target.closest('#user-menu')) {
+    const m = document.getElementById('user-menu');
+    if (m) m.style.display = 'none';
+  }
+});
+
+// ── 비밀번호 보이기/숨기기 ──
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// ── 비밀번호 강도 체크 ──
+function checkPwStrength(pw) {
+  const bars = ['bar1','bar2','bar3','bar4'];
+  const colors = ['#EF4444','#F97316','#EAB308','#22C55E'];
+  const labels = ['','약함','보통','강함','매우 강함'];
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw) || /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  bars.forEach((id, i) => {
+    document.getElementById(id).style.background = i < score ? colors[score-1] : '#1E293B';
+  });
+  document.getElementById('pw-strength-text').textContent = pw.length ? labels[score] || '매우 강함' : '';
+  document.getElementById('pw-strength-text').style.color = score > 0 ? colors[score-1] : '#334155';
+}
+
+// ── 커뮤니티 게시글 로드 (Supabase) ──
+async function loadPosts() {
+  const card = document.getElementById('community-posts-card');
+  if (!card) return;
+  card.innerHTML = '<div style="padding:40px;text-align:center;color:#475569;font-size:0.875rem;">불러오는 중...</div>';
+
+  const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    // 데이터 없으면 샘플 포스트로 복원
+    card.innerHTML = getSamplePosts();
+    return;
+  }
+  card.innerHTML = data.map(post => renderPost(post)).join('');
+}
+
+function renderPost(post) {
+  const tools  = Array.isArray(post.ai_tool) ? post.ai_tool : [];
+  const date   = new Date(post.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+  const toolBadges = tools.map(t => `<span class="badge badge-green">${t}</span>`).join('');
+  const catBadge   = post.category ? `<span class="badge badge-blue">${post.category}</span>` : '';
+  return `
+    <div class="post-row" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        ${catBadge}${toolBadges}
+        <span style="font-size:0.72rem;color:#334155;margin-left:auto;">${date}</span>
+      </div>
+      <h3 style="font-weight:700;color:#F1F5F9;font-size:0.95rem;margin-bottom:6px;line-height:1.4;">${post.title}</h3>
+      <p style="color:#475569;font-size:0.82rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${post.content}</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,82,181,0.2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#93C5FD;">
+          ${(post.author_name || '익명').charAt(0)}
+        </div>
+        <span style="font-size:0.78rem;color:#64748B;">${post.author_name || '익명'}${post.department ? ' · ' + post.department : ''}</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:0.75rem;color:#334155;">
+          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          ${post.likes || 0}
+        </div>
+      </div>
+    </div>`;
+}
+
+function getSamplePosts() {
+  return `
+    <div class="post-row" style="border-bottom:1px solid rgba(37,82,181,0.08);">
+      <div style="display:flex;gap:8px;margin-bottom:10px;"><span class="badge badge-blue">마케팅</span><span class="badge badge-green">Claude</span><span style="font-size:0.72rem;color:#334155;margin-left:auto;">2025.01.15</span></div>
+      <h3 style="font-weight:700;color:#F1F5F9;font-size:0.95rem;margin-bottom:6px;">SNS 콘텐츠 캘린더 한 달치를 30분 만에 완성했습니다</h3>
+      <p style="color:#475569;font-size:0.82rem;line-height:1.6;">브랜드 톤, 타겟 연령대, 주력 제품 카테고리를 프롬프트에 담아 요청했더니 30일치 콘텐츠 아이디어가 나왔습니다.</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(37,82,181,0.2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#93C5FD;">J</div>
+        <span style="font-size:0.78rem;color:#64748B;">정○○</span>
+      </div>
+    </div>
+    <div style="padding:32px;text-align:center;color:#475569;font-size:0.83rem;">
+      <div style="font-size:1.5rem;margin-bottom:8px;">✍️</div>
+      첫 번째 사례를 공유해주세요!<br>
+      <button onclick="openModal()" style="margin-top:12px;background:none;border:none;color:#93C5FD;cursor:pointer;font-size:0.83rem;font-weight:600;">사례 공유하기 →</button>
+    </div>`;
+}
+
+// ── 세션 자동 복원 (onAuthStateChange) ──
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    const u    = session.user;
+    const name = u.user_metadata?.name || u.email.split('@')[0];
+    // 페이지 로드 시 복원이면 토스트 없이 UI만 업데이트
+    loginSuccessQuiet(name, u.email);
+  } else if (event === 'SIGNED_OUT') {
+    document.getElementById('auth-buttons').style.display = '';
+    document.getElementById('user-buttons').style.display = 'none';
+    document.getElementById('mobile-auth-buttons').style.display = '';
+    document.getElementById('mobile-user-buttons').style.display = 'none';
+  }
+});
+
+function loginSuccessQuiet(name, email) {
+  closeAuth();
+  const initial = name.charAt(0).toUpperCase();
+  document.getElementById('user-avatar').textContent = initial;
+  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('user-email-display').textContent = email;
+  document.getElementById('auth-buttons').style.display = 'none';
+  document.getElementById('user-buttons').style.display = 'flex';
+  document.getElementById('mobile-auth-buttons').style.display = 'none';
+  document.getElementById('mobile-user-buttons').style.display = 'block';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadPosts();
+});
+
+// ── 홈 그리드 반응형 ──
+function checkHomeGrid() {
+  const grid = document.querySelector('.home-grid');
+  if (!grid) return;
+  if (window.innerWidth < 900) {
+    grid.style.gridTemplateColumns = '1fr';
+  } else {
+    grid.style.gridTemplateColumns = '1fr 320px';
+  }
+}
+window.addEventListener('resize', checkHomeGrid);
+checkHomeGrid();
+</script>
+</body>
+</html>
