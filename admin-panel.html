@@ -290,6 +290,7 @@
                 <th>가입일</th>
                 <th>마지막 로그인</th>
                 <th style="text-align:center;">상태</th>
+                <th style="text-align:center;">액션</th>
               </tr>
             </thead>
             <tbody id="users-tbody">
@@ -301,6 +302,23 @@
 
     </div> <!-- /section-users -->
 
+  </div>
+</div>
+
+<!-- ══ 회원 삭제 확인 모달 ══ -->
+<div id="user-delete-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:1.1rem; font-weight:700; color:#F1F5F9; margin-bottom:6px;">회원 삭제</div>
+      <div id="user-delete-modal-email" style="font-size:0.85rem; color:#64748B;"></div>
+    </div>
+    <p style="font-size:0.83rem; color:#94A3B8; margin-bottom:24px; padding:12px 14px; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.15); border-radius:8px;">
+      회원 계정을 삭제하면 복구가 불가능합니다. 정말 삭제하시겠습니까?
+    </p>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="closeUserDeleteModal()" style="padding:9px 20px; border-radius:8px; background:none; border:1px solid #1E293B; color:#64748B; font-size:0.875rem; cursor:pointer; font-family:inherit;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1E293B'">취소</button>
+      <button id="user-delete-confirm-btn" onclick="confirmUserDelete()" style="padding:9px 20px; border-radius:8px; background:#EF4444; border:none; color:#fff; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">삭제</button>
+    </div>
   </div>
 </div>
 
@@ -534,6 +552,58 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── 회원 상태 토글 ──
+async function toggleUserStatus(userId, isBanned) {
+  try {
+    const res = await fetch('/api/admin-user-update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminPassword}`,
+      },
+      body: JSON.stringify({ userId, ban: !isBanned }),
+    });
+    if (!res.ok) { showToast('처리 중 오류가 발생했습니다.'); return; }
+    showToast(isBanned ? '회원을 활성화했습니다.' : '회원을 비활성화했습니다.');
+    await loadUsers();
+  } catch { showToast('네트워크 오류가 발생했습니다.'); }
+}
+
+// ── 회원 삭제 모달 ──
+let pendingDeleteUserId = null;
+
+function openUserDeleteModal(userId, email) {
+  pendingDeleteUserId = userId;
+  document.getElementById('user-delete-modal-email').textContent = `${email} 계정을 삭제합니다.`;
+  document.getElementById('user-delete-modal').classList.add('open');
+}
+
+function closeUserDeleteModal() {
+  pendingDeleteUserId = null;
+  document.getElementById('user-delete-modal').classList.remove('open');
+}
+
+async function confirmUserDelete() {
+  if (!pendingDeleteUserId) return;
+  const btn = document.getElementById('user-delete-confirm-btn');
+  btn.textContent = '삭제 중...'; btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/admin-user-delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminPassword}`,
+      },
+      body: JSON.stringify({ userId: pendingDeleteUserId }),
+    });
+    if (!res.ok) { showToast('삭제 중 오류가 발생했습니다.'); }
+    else { closeUserDeleteModal(); showToast('회원이 삭제되었습니다.'); await loadUsers(); }
+  } catch { showToast('네트워크 오류가 발생했습니다.'); }
+
+  btn.textContent = '삭제'; btn.disabled = false;
+}
+
 // ── 탭 전환 ──
 let activeTab = 'posts';
 function switchTab(tab) {
@@ -597,19 +667,20 @@ function renderUsers(users) {
   document.getElementById('user-count').textContent = `총 ${users.length}명`;
 
   if (!users.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">가입자가 없습니다.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">가입자가 없습니다.</td></tr>';
     return;
   }
 
   tbody.innerHTML = users.map(u => {
-    const name  = escHtml(u.user_metadata?.name || '—');
-    const dept  = escHtml(u.user_metadata?.department || '—');
-    const email = escHtml(u.email || '—');
-    const joined = new Date(u.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const name     = escHtml(u.user_metadata?.name || '—');
+    const dept     = escHtml(u.user_metadata?.department || '—');
+    const email    = escHtml(u.email || '—');
+    const joined   = new Date(u.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
     const lastLogin = u.last_sign_in_at
       ? new Date(u.last_sign_in_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
       : '없음';
-    const isActive = u.last_sign_in_at && (Date.now() - new Date(u.last_sign_in_at)) < 7 * 86400000;
+    const isBanned = u.banned_until && new Date(u.banned_until) > new Date();
+
     return `
       <tr>
         <td style="font-weight:600; color:#F1F5F9;">${name}</td>
@@ -618,9 +689,20 @@ function renderUsers(users) {
         <td style="color:#64748B; font-size:0.78rem;">${joined}</td>
         <td style="color:#64748B; font-size:0.78rem;">${lastLogin}</td>
         <td style="text-align:center;">
-          ${isActive
-            ? '<span class="badge badge-green">활성</span>'
-            : '<span class="badge badge-gray">비활성</span>'}
+          ${isBanned
+            ? '<span class="badge" style="background:rgba(239,68,68,0.1);color:#FCA5A5;border:1px solid rgba(239,68,68,0.2);">차단됨</span>'
+            : '<span class="badge badge-green">활성</span>'}
+        </td>
+        <td style="text-align:center;">
+          <div style="display:flex;gap:6px;justify-content:center;">
+            <button onclick="toggleUserStatus('${u.id}', ${isBanned})"
+              style="padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:inherit; border:1px solid; transition:all 0.2s;
+                ${isBanned
+                  ? 'background:rgba(37,82,181,0.1);color:#93C5FD;border-color:rgba(37,82,181,0.3);'
+                  : 'background:rgba(234,179,8,0.1);color:#FCD34D;border-color:rgba(234,179,8,0.25);'}"
+            >${isBanned ? '활성화' : '비활성화'}</button>
+            <button onclick="openUserDeleteModal('${u.id}', '${email}')" class="btn-danger" style="padding:4px 10px;font-size:0.75rem;">삭제</button>
+          </div>
         </td>
       </tr>`;
   }).join('');
