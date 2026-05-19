@@ -95,6 +95,18 @@
       box-shadow: 0 24px 64px rgba(0,0,0,0.6);
     }
 
+    /* ── 탭 ── */
+    .admin-tab {
+      padding: 8px 20px; border-radius: 8px;
+      font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; border: none; background: none;
+      color: #475569; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .admin-tab:hover { color: #94A3B8; background: rgba(255,255,255,0.04); }
+    .admin-tab.active { background: rgba(37,82,181,0.15); color: #93C5FD; }
+    .admin-tab:focus { outline: none; }
+
     /* ── 테이블 ── */
     table { width: 100%; border-collapse: collapse; }
     th {
@@ -165,6 +177,15 @@
   <!-- 콘텐츠 -->
   <div style="max-width:1280px; margin:0 auto; padding:80px 24px 60px;">
 
+    <!-- 탭 네비 -->
+    <div style="display:flex; gap:4px; margin-bottom:24px; background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:10px; padding:4px; width:fit-content;">
+      <button class="admin-tab active" id="tab-posts" onclick="switchTab('posts')">사례 관리</button>
+      <button class="admin-tab" id="tab-users" onclick="switchTab('users')">회원 관리</button>
+    </div>
+
+    <!-- ══ 사례 관리 섹션 ══ -->
+    <div id="section-posts">
+
     <!-- 통계 카드 -->
     <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px;" id="stats-grid">
       <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
@@ -222,6 +243,63 @@
         </table>
       </div>
     </div>
+
+    </div> <!-- /section-posts -->
+
+    <!-- ══ 회원 관리 섹션 ══ -->
+    <div id="section-users" style="display:none;">
+
+      <!-- 회원 통계 -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px;">
+        <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">전체 가입자</div>
+          <div id="ustat-total" style="font-size:2rem; font-weight:800; color:#93C5FD;">—</div>
+        </div>
+        <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">이번 주 가입</div>
+          <div id="ustat-week" style="font-size:2rem; font-weight:800; color:#6EE7B7;">—</div>
+        </div>
+        <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">오늘 로그인</div>
+          <div id="ustat-login" style="font-size:2rem; font-weight:800; color:#C4B5FD;">—</div>
+        </div>
+      </div>
+
+      <!-- 검색 -->
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+        <input id="user-search" type="text" class="input" style="max-width:280px;" placeholder="이름, 이메일 검색..." oninput="filterUsers()">
+        <button onclick="loadUsers()" class="btn-primary" style="padding:9px 16px; margin-left:auto;">
+          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          새로고침
+        </button>
+      </div>
+
+      <!-- 회원 테이블 -->
+      <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid rgba(37,82,181,0.1); display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.875rem; font-weight:700; color:#F1F5F9;">가입자 목록</span>
+          <span id="user-count" style="font-size:0.78rem; color:#475569;"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th>이메일</th>
+                <th>부서</th>
+                <th>가입일</th>
+                <th>마지막 로그인</th>
+                <th style="text-align:center;">상태</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div> <!-- /section-users -->
 
   </div>
 </div>
@@ -454,6 +532,97 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── 탭 전환 ──
+let activeTab = 'posts';
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('section-posts').style.display = tab === 'posts' ? 'block' : 'none';
+  document.getElementById('section-users').style.display = tab === 'users' ? 'block' : 'none';
+  document.getElementById('tab-posts').classList.toggle('active', tab === 'posts');
+  document.getElementById('tab-users').classList.toggle('active', tab === 'users');
+  if (tab === 'users' && allUsers.length === 0) loadUsers();
+}
+
+// ── 회원 로드 ──
+let allUsers = [];
+
+async function loadUsers() {
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>';
+
+  try {
+    const res = await fetch('/api/admin-users', {
+      headers: { 'Authorization': `Bearer ${adminPassword}` },
+    });
+
+    if (!res.ok) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6" style="color:#FCA5A5;">불러오기 실패</td></tr>';
+      return;
+    }
+
+    const data = await res.json();
+    allUsers = data.users || [];
+    updateUserStats();
+    renderUsers(allUsers);
+  } catch (err) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:#FCA5A5;">오류: ${err.message}</td></tr>`;
+  }
+}
+
+function updateUserStats() {
+  const now     = new Date();
+  const weekAgo = new Date(now - 7 * 86400000);
+  const today   = now.toDateString();
+
+  document.getElementById('ustat-total').textContent = allUsers.length;
+  document.getElementById('ustat-week').textContent  = allUsers.filter(u => new Date(u.created_at) >= weekAgo).length;
+  document.getElementById('ustat-login').textContent = allUsers.filter(u => u.last_sign_in_at && new Date(u.last_sign_in_at).toDateString() === today).length;
+}
+
+function filterUsers() {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  const filtered = !q ? allUsers : allUsers.filter(u => {
+    const name = (u.user_metadata?.name || '').toLowerCase();
+    const email = (u.email || '').toLowerCase();
+    return name.includes(q) || email.includes(q);
+  });
+  renderUsers(filtered);
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  document.getElementById('user-count').textContent = `총 ${users.length}명`;
+
+  if (!users.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">가입자가 없습니다.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = users.map(u => {
+    const name  = escHtml(u.user_metadata?.name || '—');
+    const dept  = escHtml(u.user_metadata?.department || '—');
+    const email = escHtml(u.email || '—');
+    const joined = new Date(u.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const lastLogin = u.last_sign_in_at
+      ? new Date(u.last_sign_in_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' })
+      : '없음';
+    const isActive = u.last_sign_in_at && (Date.now() - new Date(u.last_sign_in_at)) < 7 * 86400000;
+    return `
+      <tr>
+        <td style="font-weight:600; color:#F1F5F9;">${name}</td>
+        <td style="color:#94A3B8;">${email}</td>
+        <td style="color:#64748B;">${dept}</td>
+        <td style="color:#64748B; font-size:0.78rem;">${joined}</td>
+        <td style="color:#64748B; font-size:0.78rem;">${lastLogin}</td>
+        <td style="text-align:center;">
+          ${isActive
+            ? '<span class="badge badge-green">활성</span>'
+            : '<span class="badge badge-gray">비활성</span>'}
+        </td>
+      </tr>`;
+  }).join('');
 }
 
 // ── 초기화 ──
