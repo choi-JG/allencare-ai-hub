@@ -804,7 +804,7 @@ async function approveUser(userId) {
   try {
     const res = await fetch('/api/admin-user-approve', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_PW}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminPassword}` },
       body: JSON.stringify({ userId }),
     });
     const data = await res.json();
