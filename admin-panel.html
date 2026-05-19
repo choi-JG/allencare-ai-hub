@@ -305,6 +305,34 @@
   </div>
 </div>
 
+<!-- ══ 비밀번호 초기화 모달 ══ -->
+<div id="pw-reset-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div id="pw-reset-confirm" >
+      <div style="font-size:1.1rem; font-weight:700; color:#F1F5F9; margin-bottom:6px;">비밀번호 초기화</div>
+      <div id="pw-reset-email" style="font-size:0.85rem; color:#64748B; margin-bottom:20px;"></div>
+      <p style="font-size:0.83rem; color:#94A3B8; margin-bottom:24px; padding:12px 14px; background:rgba(37,82,181,0.05); border:1px solid rgba(37,82,181,0.15); border-radius:8px;">
+        임시 비밀번호를 생성하고 해당 회원의 비밀번호를 초기화합니다.
+      </p>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button onclick="closePwResetModal()" style="padding:9px 20px; border-radius:8px; background:none; border:1px solid #1E293B; color:#64748B; font-size:0.875rem; cursor:pointer; font-family:inherit;">취소</button>
+        <button id="pw-reset-confirm-btn" onclick="confirmPwReset()" class="btn-primary" style="padding:9px 20px;">초기화</button>
+      </div>
+    </div>
+    <div id="pw-reset-result" style="display:none;">
+      <div style="font-size:1.1rem; font-weight:700; color:#F1F5F9; margin-bottom:16px;">초기화 완료</div>
+      <p style="font-size:0.83rem; color:#94A3B8; margin-bottom:12px;">아래 임시 비밀번호를 회원에게 전달하세요.</p>
+      <div style="display:flex; align-items:center; gap:8px; background:#070C15; border:1px solid rgba(37,82,181,0.3); border-radius:8px; padding:12px 16px; margin-bottom:20px;">
+        <code id="pw-reset-value" style="font-size:1.1rem; font-weight:700; color:#93C5FD; letter-spacing:0.1em; flex:1;"></code>
+        <button onclick="copyTempPw()" style="padding:5px 12px; border-radius:6px; background:rgba(37,82,181,0.15); border:1px solid rgba(37,82,181,0.3); color:#93C5FD; font-size:0.75rem; cursor:pointer; font-family:inherit;" id="copy-btn">복사</button>
+      </div>
+      <div style="display:flex; justify-content:flex-end;">
+        <button onclick="closePwResetModal()" class="btn-primary" style="padding:9px 20px;">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 회원 삭제 확인 모달 ══ -->
 <div id="user-delete-modal" class="modal-overlay">
   <div class="modal-box">
@@ -552,6 +580,58 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ── 비밀번호 초기화 ──
+let pendingResetUserId = null;
+
+function openPwResetModal(userId, email) {
+  pendingResetUserId = userId;
+  document.getElementById('pw-reset-email').textContent = email;
+  document.getElementById('pw-reset-confirm').style.display = 'block';
+  document.getElementById('pw-reset-result').style.display = 'none';
+  document.getElementById('pw-reset-modal').classList.add('open');
+}
+
+function closePwResetModal() {
+  pendingResetUserId = null;
+  document.getElementById('pw-reset-modal').classList.remove('open');
+}
+
+async function confirmPwReset() {
+  if (!pendingResetUserId) return;
+  const btn = document.getElementById('pw-reset-confirm-btn');
+  btn.textContent = '초기화 중...'; btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/admin-user-reset-pw', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminPassword}`,
+      },
+      body: JSON.stringify({ userId: pendingResetUserId }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) { showToast('초기화 중 오류가 발생했습니다.'); }
+    else {
+      document.getElementById('pw-reset-value').textContent = data.tempPassword;
+      document.getElementById('pw-reset-confirm').style.display = 'none';
+      document.getElementById('pw-reset-result').style.display = 'block';
+    }
+  } catch { showToast('네트워크 오류가 발생했습니다.'); }
+
+  btn.textContent = '초기화'; btn.disabled = false;
+}
+
+function copyTempPw() {
+  const pw = document.getElementById('pw-reset-value').textContent;
+  navigator.clipboard.writeText(pw).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '복사됨!';
+    setTimeout(() => { btn.textContent = '복사'; }, 2000);
+  });
+}
+
 // ── 회원 상태 토글 ──
 async function toggleUserStatus(userId, isBanned) {
   try {
@@ -694,13 +774,15 @@ function renderUsers(users) {
             : '<span class="badge badge-green">활성</span>'}
         </td>
         <td style="text-align:center;">
-          <div style="display:flex;gap:6px;justify-content:center;">
+          <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
             <button onclick="toggleUserStatus('${u.id}', ${isBanned})"
               style="padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:inherit; border:1px solid; transition:all 0.2s;
                 ${isBanned
                   ? 'background:rgba(37,82,181,0.1);color:#93C5FD;border-color:rgba(37,82,181,0.3);'
                   : 'background:rgba(234,179,8,0.1);color:#FCD34D;border-color:rgba(234,179,8,0.25);'}"
             >${isBanned ? '활성화' : '비활성화'}</button>
+            <button onclick="openPwResetModal('${u.id}', '${email}')"
+              style="padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:600; cursor:pointer; font-family:inherit; border:1px solid; transition:all 0.2s; background:rgba(139,92,246,0.1);color:#C4B5FD;border-color:rgba(139,92,246,0.25);">PW 초기화</button>
             <button onclick="openUserDeleteModal('${u.id}', '${email}')" class="btn-danger" style="padding:4px 10px;font-size:0.75rem;">삭제</button>
           </div>
         </td>
