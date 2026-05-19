@@ -3,7 +3,15 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // 환경변수 존재 확인
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ error: 'Missing env: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY' });
+  }
+
   const auth = req.headers.authorization;
+  if (!process.env.ADMIN_PASSWORD) {
+    return res.status(500).json({ error: 'Missing env: ADMIN_PASSWORD' });
+  }
   if (!auth || auth !== `Bearer ${process.env.ADMIN_PASSWORD}`) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -19,13 +27,12 @@ module.exports = async function handler(req, res) {
       }
     );
 
+    const text = await response.text();
     if (!response.ok) {
-      const err = await response.text();
-      return res.status(500).json({ error: err });
+      return res.status(500).json({ error: `Supabase ${response.status}: ${text}` });
     }
 
-    const data = await response.json();
-    return res.status(200).json(data);
+    return res.status(200).json(JSON.parse(text));
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

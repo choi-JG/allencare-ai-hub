@@ -558,7 +558,8 @@ async function loadUsers() {
     });
 
     if (!res.ok) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="6" style="color:#FCA5A5;">불러오기 실패</td></tr>';
+      const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="6" style="color:#FCA5A5;">오류: ${errData.error || res.status}</td></tr>`;
       return;
     }
 
