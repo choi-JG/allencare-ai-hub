@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AllenCare AI Hub — 관리자</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #070C15; color: #CBD5E1; font-family: 'Pretendard', system-ui, sans-serif; min-height: 100vh; }
+
+    /* ── 잠금 화면 ── */
+    #lock-screen {
+      position: fixed; inset: 0; z-index: 999;
+      background: #070C15;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lock-box {
+      background: #0F172A;
+      border: 1px solid rgba(37,82,181,0.25);
+      border-radius: 16px; padding: 40px 36px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+
+    /* ── 공통 ── */
+    .input {
+      background: #0F172A; border: 1px solid #1E293B;
+      border-radius: 8px; padding: 10px 14px;
+      color: #E2E8F0; font-size: 0.875rem;
+      outline: none; width: 100%; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .input:focus { border-color: #2552B5; }
+    .input::placeholder { color: #334155; }
+
+    .btn-primary {
+      background: #2552B5; color: #fff; border: none;
+      border-radius: 8px; padding: 10px 20px;
+      font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary:hover { background: #3B6DD4; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:focus { outline: none; }
+
+    .btn-danger {
+      background: rgba(239,68,68,0.1); color: #FCA5A5;
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 6px; padding: 5px 12px;
+      font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); }
+    .btn-danger:active { transform: scale(0.97); }
+    .btn-danger:focus { outline: none; }
+
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 99px;
+      font-size: 0.7rem; font-weight: 600; font-family: monospace;
+    }
+    .badge-blue  { background: rgba(37,82,181,0.15); color: #93C5FD; border: 1px solid rgba(37,82,181,0.25); }
+    .badge-green { background: rgba(16,185,129,0.1);  color: #6EE7B7; border: 1px solid rgba(16,185,129,0.2); }
+    .badge-gray  { background: rgba(100,116,139,0.15); color: #94A3B8; border: 1px solid rgba(100,116,139,0.2); }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 500;
+      background: #1E293B; border: 1px solid rgba(37,82,181,0.3);
+      border-radius: 10px; padding: 12px 18px;
+      font-size: 0.875rem; color: #E2E8F0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── 모달 ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(4,8,15,0.8); backdrop-filter: blur(8px);
+      z-index: 400; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #0F172A; border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 16px; padding: 32px;
+      width: 100%; max-width: 420px; margin: 0 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+
+    /* ── 테이블 ── */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left; padding: 10px 16px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+      color: #475569; border-bottom: 1px solid rgba(37,82,181,0.1);
+    }
+    td { padding: 14px 16px; border-bottom: 1px solid rgba(37,82,181,0.07); font-size: 0.83rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(37,82,181,0.03); }
+
+    .empty-row td { text-align: center; color: #475569; padding: 48px; }
+
+    /* ── 스크롤바 ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0F172A; }
+    ::-webkit-scrollbar-thumb { background: #2552B5; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ 잠금 화면 ══ -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div style="text-align:center; margin-bottom:28px;">
+      <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <div style="background:#fff; border-radius:6px; padding:3px 8px;">
+          <img src="./brand_logo/logo.png" alt="AllenCare" style="height:22px; width:auto; display:block;"
+               onerror="this.parentElement.style.display='none'">
+        </div>
+        <span style="font-size:0.7rem; font-weight:700; color:#2552B5; background:rgba(37,82,181,0.12); border:1px solid rgba(37,82,181,0.25); border-radius:99px; padding:2px 8px; font-family:monospace;">ADMIN</span>
+      </div>
+      <div style="font-size:1.1rem; font-weight:700; color:#F1F5F9;">관리자 로그인</div>
+      <div style="font-size:0.8rem; color:#475569; margin-top:4px;">AllenCare AI Hub 관리자 전용</div>
+    </div>
+
+    <form onsubmit="checkPassword(event)">
+      <label style="display:block; font-size:0.78rem; font-weight:600; color:#64748B; margin-bottom:6px;">비밀번호</label>
+      <input id="pw-input" type="password" class="input" placeholder="관리자 비밀번호 입력" autofocus>
+      <div id="pw-error" style="display:none; margin-top:8px; font-size:0.78rem; color:#FCA5A5;">비밀번호가 올바르지 않습니다.</div>
+      <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:16px; padding:11px;">
+        로그인
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ 관리자 패널 ══ -->
+<div id="admin-panel" style="display:none;">
+
+  <!-- 헤더 -->
+  <header style="position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(7,12,21,0.95); backdrop-filter:blur(16px); border-bottom:1px solid rgba(37,82,181,0.15);">
+    <div style="max-width:1280px; margin:0 auto; padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="background:#fff; border-radius:6px; padding:3px 8px;">
+          <img src="./brand_logo/logo.png" alt="AllenCare" style="height:20px; width:auto; display:block;"
+               onerror="this.parentElement.style.display='none'">
+        </div>
+        <span style="font-size:0.7rem; font-weight:700; color:#2552B5; background:rgba(37,82,181,0.12); border:1px solid rgba(37,82,181,0.25); border-radius:99px; padding:2px 8px; font-family:monospace;">ADMIN PANEL</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:0.78rem; color:#475569;">커뮤니티 사례 관리</span>
+        <button onclick="logout()" style="padding:6px 14px; border-radius:6px; background:none; border:1px solid #1E293B; color:#64748B; font-size:0.78rem; cursor:pointer; font-family:inherit; transition:all 0.2s;" onmouseover="this.style.borderColor='#334155'; this.style.color='#94A3B8'" onmouseout="this.style.borderColor='#1E293B'; this.style.color='#64748B'">로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 콘텐츠 -->
+  <div style="max-width:1280px; margin:0 auto; padding:80px 24px 60px;">
+
+    <!-- 통계 카드 -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px;" id="stats-grid">
+      <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+        <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">전체 사례</div>
+        <div id="stat-total" style="font-size:2rem; font-weight:800; color:#93C5FD;">—</div>
+      </div>
+      <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+        <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">오늘 등록</div>
+        <div id="stat-today" style="font-size:2rem; font-weight:800; color:#6EE7B7;">—</div>
+      </div>
+      <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+        <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">이번 주 등록</div>
+        <div id="stat-week" style="font-size:2rem; font-weight:800; color:#C4B5FD;">—</div>
+      </div>
+    </div>
+
+    <!-- 검색 & 필터 -->
+    <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+      <input id="search-input" type="text" class="input" style="max-width:280px;" placeholder="제목, 작성자 검색..."
+             oninput="filterPosts()">
+      <select id="filter-category" class="input" style="max-width:160px;" onchange="filterPosts()">
+        <option value="">전체 카테고리</option>
+      </select>
+      <select id="filter-tool" class="input" style="max-width:160px;" onchange="filterPosts()">
+        <option value="">전체 AI 도구</option>
+      </select>
+      <button onclick="loadPosts()" class="btn-primary" style="padding:9px 16px; margin-left:auto;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        새로고침
+      </button>
+    </div>
+
+    <!-- 테이블 -->
+    <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; overflow:hidden;">
+      <div style="padding:16px 20px; border-bottom:1px solid rgba(37,82,181,0.1); display:flex; align-items:center; justify-content:space-between;">
+        <span style="font-size:0.875rem; font-weight:700; color:#F1F5F9;">사례 공유 목록</span>
+        <span id="post-count" style="font-size:0.78rem; color:#475569;"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>제목</th>
+              <th>작성자</th>
+              <th>부서</th>
+              <th>AI 도구</th>
+              <th>카테고리</th>
+              <th>등록일</th>
+              <th style="text-align:center;">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="posts-tbody">
+            <tr class="empty-row"><td colspan="7">불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ 삭제 확인 모달 ══ -->
+<div id="delete-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:1.1rem; font-weight:700; color:#F1F5F9; margin-bottom:6px;">사례 삭제</div>
+      <div id="delete-modal-title" style="font-size:0.85rem; color:#64748B; line-height:1.5;"></div>
+    </div>
+    <p style="font-size:0.83rem; color:#94A3B8; margin-bottom:24px; padding:12px 14px; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.15); border-radius:8px;">
+      삭제 후 복구가 불가능합니다. 정말 삭제하시겠습니까?
+    </p>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="closeDeleteModal()" style="padding:9px 20px; border-radius:8px; background:none; border:1px solid #1E293B; color:#64748B; font-size:0.875rem; cursor:pointer; font-family:inherit; transition:all 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1E293B'">취소</button>
+      <button id="delete-confirm-btn" onclick="confirmDelete()" style="padding:9px 20px; border-radius:8px; background:#EF4444; border:none; color:#fff; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit; transition:background 0.2s;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 토스트 ══ -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ── 상수 ──
+const CORRECT_HASH = '42b6bd497d8f8791094b1dd2825652c8c3577c77cca2918585da14db702f8732';
+const SESSION_KEY  = 'admin_auth';
+const SESSION_TTL  = 4 * 60 * 60 * 1000; // 4시간
+
+const SUPABASE_URL = 'https://irzqwyofjlftohcwsfho.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyenF3eW9mamxmdG9oY3dzZmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzM2NTQsImV4cCI6MjA5NDYwOTY1NH0.aFvqO4iUlVGx_TL9i-MpME0kdB-TerADNOgQmh6D7ug';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allPosts = [];
+let pendingDeleteId = null;
+let adminPassword = null;
+
+// ── 비밀번호 해시 ──
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── 세션 확인 ──
+function checkSession() {
+  const raw = sessionStorage.getItem(SESSION_KEY);
+  if (!raw) return false;
+  try {
+    const { ts, pw } = JSON.parse(raw);
+    if (Date.now() - ts > SESSION_TTL) { sessionStorage.removeItem(SESSION_KEY); return false; }
+    adminPassword = pw;
+    return true;
+  } catch { return false; }
+}
+
+function saveSession(pw) {
+  adminPassword = pw;
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ts: Date.now(), pw }));
+}
+
+// ── 비밀번호 확인 ──
+async function checkPassword(e) {
+  e.preventDefault();
+  const pw  = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-error');
+  const hash = await sha256(pw);
+  if (hash !== CORRECT_HASH) {
+    err.style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    return;
+  }
+  err.style.display = 'none';
+  saveSession(pw);
+  enterAdmin();
+}
+
+function enterAdmin() {
+  document.getElementById('lock-screen').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+  loadPosts();
+}
+
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+// ── 게시글 로드 ──
+async function loadPosts() {
+  const tbody = document.getElementById('posts-tbody');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="7">불러오는 중...</td></tr>';
+
+  const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+
+  if (error) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7" style="color:#FCA5A5;">오류: ${error.message}</td></tr>`;
+    return;
+  }
+
+  allPosts = data || [];
+  updateStats();
+  populateFilters();
+  renderPosts(allPosts);
+}
+
+// ── 통계 업데이트 ──
+function updateStats() {
+  const now   = new Date();
+  const today = now.toDateString();
+  const weekAgo = new Date(now - 7 * 86400000);
+
+  document.getElementById('stat-total').textContent = allPosts.length;
+  document.getElementById('stat-today').textContent = allPosts.filter(p => new Date(p.created_at).toDateString() === today).length;
+  document.getElementById('stat-week').textContent  = allPosts.filter(p => new Date(p.created_at) >= weekAgo).length;
+}
+
+// ── 필터 옵션 채우기 ──
+function populateFilters() {
+  const categories = [...new Set(allPosts.map(p => p.category).filter(Boolean))];
+  const tools = [...new Set(allPosts.flatMap(p => Array.isArray(p.ai_tool) ? p.ai_tool : []).filter(Boolean))];
+
+  const catSel = document.getElementById('filter-category');
+  const toolSel = document.getElementById('filter-tool');
+
+  catSel.innerHTML = '<option value="">전체 카테고리</option>' +
+    categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  toolSel.innerHTML = '<option value="">전체 AI 도구</option>' +
+    tools.map(t => `<option value="${t}">${t}</option>`).join('');
+}
+
+// ── 필터링 ──
+function filterPosts() {
+  const q    = document.getElementById('search-input').value.toLowerCase();
+  const cat  = document.getElementById('filter-category').value;
+  const tool = document.getElementById('filter-tool').value;
+
+  const filtered = allPosts.filter(p => {
+    const matchQ   = !q   || p.title?.toLowerCase().includes(q) || p.author_name?.toLowerCase().includes(q);
+    const matchCat = !cat  || p.category === cat;
+    const matchTool = !tool || (Array.isArray(p.ai_tool) && p.ai_tool.includes(tool));
+    return matchQ && matchCat && matchTool;
+  });
+  renderPosts(filtered);
+}
+
+// ── 렌더링 ──
+function renderPosts(posts) {
+  const tbody = document.getElementById('posts-tbody');
+  document.getElementById('post-count').textContent = `총 ${posts.length}건`;
+
+  if (!posts.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">사례가 없습니다.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = posts.map(post => {
+    const tools = Array.isArray(post.ai_tool) ? post.ai_tool : [];
+    const date  = new Date(post.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const toolBadges = tools.slice(0,2).map(t => `<span class="badge badge-green" style="margin-right:4px;">${t}</span>`).join('');
+    return `
+      <tr>
+        <td style="max-width:260px;">
+          <div style="font-weight:600; color:#F1F5F9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escHtml(post.title || '')}">${escHtml(post.title || '(제목 없음)')}</div>
+          <div style="font-size:0.75rem; color:#475569; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escHtml((post.content || '').substring(0,50))}${(post.content||'').length > 50 ? '…' : ''}</div>
+        </td>
+        <td style="color:#94A3B8; white-space:nowrap;">${escHtml(post.author_name || '익명')}</td>
+        <td style="color:#64748B; white-space:nowrap;">${escHtml(post.department || '—')}</td>
+        <td>${toolBadges || '<span style="color:#334155; font-size:0.75rem;">—</span>'}</td>
+        <td>${post.category ? `<span class="badge badge-blue">${escHtml(post.category)}</span>` : '<span style="color:#334155; font-size:0.75rem;">—</span>'}</td>
+        <td style="color:#64748B; white-space:nowrap; font-size:0.78rem;">${date}</td>
+        <td style="text-align:center;">
+          <button class="btn-danger" onclick="openDeleteModal('${post.id}', '${escHtml(post.title || '이 사례').replace(/'/g,"\\'")}')">삭제</button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── 삭제 모달 ──
+function openDeleteModal(id, title) {
+  pendingDeleteId = id;
+  document.getElementById('delete-modal-title').textContent = `"${title}" 사례를 삭제합니다.`;
+  document.getElementById('delete-modal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('delete-modal').classList.remove('open');
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.textContent = '삭제 중...'; btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/admin-delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminPassword}`,
+      },
+      body: JSON.stringify({ id: pendingDeleteId }),
+    });
+
+    if (!res.ok) {
+      showToast('삭제 중 오류가 발생했습니다.');
+    } else {
+      closeDeleteModal();
+      showToast('사례가 삭제되었습니다.');
+      await loadPosts();
+    }
+  } catch {
+    showToast('네트워크 오류가 발생했습니다.');
+  }
+
+  btn.textContent = '삭제'; btn.disabled = false;
+}
+
+// ── 토스트 ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── 초기화 ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (checkSession()) enterAdmin();
+});
+</script>
+</body>
+</html>
