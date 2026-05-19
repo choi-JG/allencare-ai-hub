@@ -1986,11 +1986,17 @@ function showPostDetail(postId) {
   const sid = String(post.id);
   const alreadyLiked = hasLiked(sid);
   const likeStyle = alreadyLiked
-    ? 'display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:9999px;border:1px solid #2552B5;background:#eff6ff;cursor:default;font-size:15px;color:#2552B5;font-family:inherit;font-weight:600;'
+    ? 'display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:9999px;border:1px solid #2552B5;background:#eff6ff;cursor:pointer;font-size:15px;color:#2552B5;font-family:inherit;font-weight:600;transition:all 0.15s;'
     : 'display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:9999px;border:1px solid #e2e8f0;background:#ffffff;cursor:pointer;font-size:15px;color:#475569;font-family:inherit;font-weight:600;transition:all 0.15s;';
   const likeOnclick = alreadyLiked
-    ? `onclick="showToast('이미 추천한 게시글입니다.')"`
-    : `onclick="likePost('${sid}', ${likes})" onmouseover="this.style.borderColor='#2552B5';this.style.color='#2552B5';" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#475569';"`;
+    ? `unlikePost('${sid}', ${likes})`
+    : `likePost('${sid}', ${likes})`;
+  const likeHoverIn = alreadyLiked
+    ? `this.style.background='#fef2f2';this.style.borderColor='#fca5a5';this.style.color='#ef4444';`
+    : `this.style.borderColor='#2552B5';this.style.color='#2552B5';`;
+  const likeHoverOut = alreadyLiked
+    ? `this.style.background='#eff6ff';this.style.borderColor='#2552B5';this.style.color='#2552B5';`
+    : `this.style.borderColor='#e2e8f0';this.style.color='#475569';`;
 
   document.getElementById('community-post-detail').innerHTML = `
     <div style="margin-bottom:24px;">
@@ -2008,9 +2014,9 @@ function showPostDetail(postId) {
     <div style="font-size:17px;color:#1e293b;line-height:1.8;letter-spacing:-0.374px;white-space:pre-wrap;">${post.content}</div>
     <div style="height:1px;background:#e2e8f0;margin-top:40px;margin-bottom:24px;"></div>
     <div style="display:flex;align-items:center;gap:16px;">
-      <button id="like-btn-${sid}" ${likeOnclick} style="${likeStyle}">
+      <button id="like-btn-${sid}" onclick="${likeOnclick}" style="${likeStyle}" onmouseover="${likeHoverIn}" onmouseout="${likeHoverOut}">
         <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-        ${alreadyLiked ? '추천함' : '추천'}&nbsp;<span id="like-count-${sid}">${likes}</span>
+        <span id="like-label-${sid}">${alreadyLiked ? '추천함' : '추천'}</span>&nbsp;<span id="like-count-${sid}">${likes}</span>
       </button>
     </div>`;
 }
@@ -2032,9 +2038,13 @@ function markLiked(postId) {
     localStorage.setItem('liked_posts', JSON.stringify(liked));
   }
 }
+function unmarkLiked(postId) {
+  const liked = JSON.parse(localStorage.getItem('liked_posts') || '[]');
+  localStorage.setItem('liked_posts', JSON.stringify(liked.filter(id => id !== String(postId))));
+}
 
 async function likePost(postId, currentCount) {
-  if (hasLiked(postId)) { showToast('이미 추천한 게시글입니다.'); return; }
+  if (hasLiked(postId)) return;
   const btn = document.getElementById(`like-btn-${postId}`);
   if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
 
@@ -2045,21 +2055,54 @@ async function likePost(postId, currentCount) {
     const newCount = Number(currentCount) + 1;
     const countEl = document.getElementById(`like-count-${postId}`);
     if (countEl) countEl.textContent = newCount;
+    const labelEl = document.getElementById(`like-label-${postId}`);
+    if (labelEl) labelEl.textContent = '추천함';
     const p = allPosts.find(p => String(p.id) === String(postId));
     if (p) p.likes = newCount;
     if (btn) {
       btn.style.background = '#eff6ff';
       btn.style.borderColor = '#2552B5';
       btn.style.color = '#2552B5';
-      btn.style.cursor = 'default';
-      btn.setAttribute('onclick', `showToast('이미 추천한 게시글입니다.')`);
-      btn.onmouseover = null;
-      btn.onmouseout = null;
+      btn.setAttribute('onclick', `unlikePost('${postId}', ${newCount})`);
+      btn.setAttribute('onmouseover', `this.style.background='#fef2f2';this.style.borderColor='#fca5a5';this.style.color='#ef4444';`);
+      btn.setAttribute('onmouseout', `this.style.background='#eff6ff';this.style.borderColor='#2552B5';this.style.color='#2552B5';`);
       btn.disabled = false;
       btn.style.opacity = '1';
     }
   } else {
     showToast('추천 처리 중 오류가 발생했습니다.');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }
+}
+
+async function unlikePost(postId, currentCount) {
+  if (!hasLiked(postId)) return;
+  const btn = document.getElementById(`like-btn-${postId}`);
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+
+  const { error } = await sb.rpc('decrement_post_likes', { post_id: postId });
+
+  if (!error) {
+    unmarkLiked(postId);
+    const newCount = Math.max(Number(currentCount) - 1, 0);
+    const countEl = document.getElementById(`like-count-${postId}`);
+    if (countEl) countEl.textContent = newCount;
+    const labelEl = document.getElementById(`like-label-${postId}`);
+    if (labelEl) labelEl.textContent = '추천';
+    const p = allPosts.find(p => String(p.id) === String(postId));
+    if (p) p.likes = newCount;
+    if (btn) {
+      btn.style.background = '#ffffff';
+      btn.style.borderColor = '#e2e8f0';
+      btn.style.color = '#475569';
+      btn.setAttribute('onclick', `likePost('${postId}', ${newCount})`);
+      btn.setAttribute('onmouseover', `this.style.borderColor='#2552B5';this.style.color='#2552B5';`);
+      btn.setAttribute('onmouseout', `this.style.borderColor='#e2e8f0';this.style.color='#475569';`);
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  } else {
+    showToast('추천 취소 중 오류가 발생했습니다.');
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
   }
 }
