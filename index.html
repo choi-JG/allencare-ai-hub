@@ -465,30 +465,13 @@
       <div style="margin-bottom:36px;" class="fade-up">
         <span class="section-eyebrow eyebrow-light">AI TOOLS</span>
         <h1 class="section-title">AI 도구 모음</h1>
-        <p class="section-desc desc-light">별도 설치 없이 바로 시작할 수 있는 주요 AI 도구들을 소개합니다.</p>
-      </div>
-
-      <!-- 검색 + 필터 -->
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px;flex-wrap:wrap;" class="fade-up delay-1">
-        <div style="position:relative;flex:1;min-width:200px;">
-          <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
-          </svg>
-          <input type="text" placeholder="도구 검색..." class="input" style="padding-left:42px;border-radius:9999px;" id="tool-search" oninput="filterToolCards()">
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="chip active" data-type="all" onclick="setToolFilter(this,'all')">전체</button>
-          <button class="chip" data-type="text" onclick="setToolFilter(this,'text')">텍스트</button>
-          <button class="chip" data-type="image" onclick="setToolFilter(this,'image')">이미지</button>
-          <button class="chip" data-type="code" onclick="setToolFilter(this,'code')">코드</button>
-          <button class="chip" data-type="search" onclick="setToolFilter(this,'search')">검색</button>
-        </div>
+        <p class="section-desc desc-light">주요 AI 도구들을 소개합니다.</p>
       </div>
 
       <!-- 도구 카드 그리드 -->
       <div id="tool-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;" class="fade-up delay-2">
 
-        <div class="card tool-item" data-type="text" data-name="chatgpt" style="padding:24px;">
+        <div class="card tool-item" data-type="text" data-name="chatgpt" style="padding:24px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:44px;height:44px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://www.google.com/s2/favicons?domain=chatgpt.com&sz=128" style="width:32px;height:32px;object-fit:contain;" alt="ChatGPT"></div>
@@ -499,21 +482,21 @@
             </div>
             <span class="badge badge-green">무료 가능</span>
           </div>
-          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;">대화형 AI의 대표 서비스. 이메일 작성, 요약, 번역, 아이디어 발상 등 텍스트 작업 전반에 탁월합니다.</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">대화형 AI의 대표 서비스. 이메일 작성, 요약, 번역, 아이디어 발상 등 텍스트 작업 전반에 탁월합니다.</p>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;">
             <span class="badge badge-gray">글쓰기</span>
             <span class="badge badge-gray">요약</span>
             <span class="badge badge-gray">번역</span>
             <span class="badge badge-gray">브레인스토밍</span>
           </div>
-          <div class="divider" style="margin-bottom:16px;"></div>
+          <div class="divider" style="margin-top:auto;margin-bottom:16px;"></div>
           <a href="https://chatgpt.com" target="_blank" style="font-size:14px;font-weight:600;color:#2552B5;display:flex;align-items:center;gap:4px;text-decoration:none;letter-spacing:-0.224px;" onmouseover="this.style.color='#1e42a0'" onmouseout="this.style.color='#2552B5'">
             서비스 바로가기
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           </a>
         </div>
 
-        <div class="card tool-item" data-type="text" data-name="claude" style="padding:24px;border-color:#bfdbfe;">
+        <div class="card tool-item" data-type="text" data-name="claude" style="padding:24px;border-color:#bfdbfe;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:44px;height:44px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://www.google.com/s2/favicons?domain=claude.ai&sz=128" style="width:32px;height:32px;object-fit:contain;" alt="Claude"></div>
@@ -524,21 +507,21 @@
             </div>
             <div style="display:flex;gap:4px;"><span class="badge badge-blue">추천</span><span class="badge badge-green">무료 가능</span></div>
           </div>
-          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;">긴 문서 분석, 보고서 작성, 복잡한 논리가 필요한 업무에 강력합니다. 한국어 이해도가 매우 뛰어납니다.</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">긴 문서 분석, 보고서 작성, 복잡한 논리가 필요한 업무에 강력합니다. 한국어 이해도가 매우 뛰어납니다.</p>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;">
             <span class="badge badge-gray">문서분석</span>
             <span class="badge badge-gray">보고서</span>
             <span class="badge badge-gray">코드</span>
             <span class="badge badge-gray">논리추론</span>
           </div>
-          <div class="divider" style="margin-bottom:16px;"></div>
+          <div class="divider" style="margin-top:auto;margin-bottom:16px;"></div>
           <a href="https://claude.ai" target="_blank" style="font-size:14px;font-weight:600;color:#2552B5;display:flex;align-items:center;gap:4px;text-decoration:none;letter-spacing:-0.224px;" onmouseover="this.style.color='#1e42a0'" onmouseout="this.style.color='#2552B5'">
             서비스 바로가기
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           </a>
         </div>
 
-        <div class="card tool-item" data-type="text" data-name="gemini" style="padding:24px;">
+        <div class="card tool-item" data-type="text" data-name="gemini" style="padding:24px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=128" style="width:32px;height:32px;object-fit:contain;" alt="Gemini"></div>
@@ -549,20 +532,20 @@
             </div>
             <span class="badge badge-green">무료 가능</span>
           </div>
-          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;">구글 검색 연동 강점. 최신 정보 포함 답변이 필요하거나, Gmail·문서 등 구글 서비스 연계에 유용합니다.</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">구글 검색 연동 강점. 최신 정보 포함 답변이 필요하거나, Gmail·문서 등 구글 서비스 연계에 유용합니다.</p>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;">
             <span class="badge badge-gray">실시간검색</span>
             <span class="badge badge-gray">구글연동</span>
             <span class="badge badge-gray">멀티모달</span>
           </div>
-          <div class="divider" style="margin-bottom:16px;"></div>
+          <div class="divider" style="margin-top:auto;margin-bottom:16px;"></div>
           <a href="https://gemini.google.com" target="_blank" style="font-size:14px;font-weight:600;color:#2552B5;display:flex;align-items:center;gap:4px;text-decoration:none;letter-spacing:-0.224px;" onmouseover="this.style.color='#1e42a0'" onmouseout="this.style.color='#2552B5'">
             서비스 바로가기
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           </a>
         </div>
 
-        <div class="card tool-item" data-type="search" data-name="perplexity" style="padding:24px;">
+        <div class="card tool-item" data-type="search" data-name="perplexity" style="padding:24px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://www.google.com/s2/favicons?domain=perplexity.ai&sz=128" style="width:32px;height:32px;object-fit:contain;" alt="Perplexity"></div>
@@ -573,20 +556,20 @@
             </div>
             <span class="badge badge-green">무료 가능</span>
           </div>
-          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;">AI 기반 검색 엔진. 출처를 명시하며 답변해 신뢰성이 높습니다. 시장 조사, 트렌드 파악에 최적입니다.</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">AI 기반 검색 엔진. 출처를 명시하며 답변해 신뢰성이 높습니다. 시장 조사, 트렌드 파악에 최적입니다.</p>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;">
             <span class="badge badge-gray">리서치</span>
             <span class="badge badge-gray">팩트체크</span>
             <span class="badge badge-gray">출처명시</span>
           </div>
-          <div class="divider" style="margin-bottom:16px;"></div>
+          <div class="divider" style="margin-top:auto;margin-bottom:16px;"></div>
           <a href="https://perplexity.ai" target="_blank" style="font-size:14px;font-weight:600;color:#2552B5;display:flex;align-items:center;gap:4px;text-decoration:none;letter-spacing:-0.224px;" onmouseover="this.style.color='#1e42a0'" onmouseout="this.style.color='#2552B5'">
             서비스 바로가기
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           </a>
         </div>
 
-        <div class="card tool-item" data-type="text" data-name="copilot-ms" style="padding:24px;">
+        <div class="card tool-item" data-type="text" data-name="copilot-ms" style="padding:24px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://copilot.microsoft.com/favicon.ico" style="width:32px;height:32px;object-fit:contain;" alt="Microsoft Copilot"></div>
@@ -597,20 +580,20 @@
             </div>
             <span class="badge badge-green">무료 가능</span>
           </div>
-          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;">Word·Excel·PowerPoint·Teams에 내장된 AI 어시스턴트. 문서 초안 작성, 데이터 분석, 회의 요약을 바로 처리합니다.</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">Word·Excel·PowerPoint·Teams에 내장된 AI 어시스턴트. 문서 초안 작성, 데이터 분석, 회의 요약을 바로 처리합니다.</p>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;">
             <span class="badge badge-gray">오피스연동</span>
             <span class="badge badge-gray">문서작성</span>
             <span class="badge badge-gray">회의요약</span>
           </div>
-          <div class="divider" style="margin-bottom:16px;"></div>
+          <div class="divider" style="margin-top:auto;margin-bottom:16px;"></div>
           <a href="https://copilot.microsoft.com" target="_blank" style="font-size:14px;font-weight:600;color:#2552B5;display:flex;align-items:center;gap:4px;text-decoration:none;letter-spacing:-0.224px;" onmouseover="this.style.color='#1e42a0'" onmouseout="this.style.color='#2552B5'">
             서비스 바로가기
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           </a>
         </div>
 
-        <div class="card tool-item" data-type="code" data-name="vscode" style="padding:24px;">
+        <div class="card tool-item" data-type="code" data-name="vscode" style="padding:24px;display:flex;flex-direction:column;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
               <div style="width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;overflow:hidden;"><img src="https://www.google.com/s2/favicons?domain=code.visualstudio.com&sz=128" style="width:32px;height:32px;object-fit:contain;" alt="VS Code"></div>
@@ -621,13 +604,13 @@
             </div>
             <span class="badge badge-green">무료</span>
           </div>
-          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;">AI 코딩의 기본 작업 환경. Claude Code, GitHub Copilot 등 AI 확장 프로그램을 연동해 대화하듯 코드를 작성하고 수정할 수 있습니다.</p>
+          <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:16px;letter-spacing:-0.224px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">AI 코딩 작업의 기본 환경. Claude Code, GitHub Copilot 등 AI 확장 프로그램을 연동해 대화하듯 코드를 작성할 수 있습니다.</p>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:18px;">
             <span class="badge badge-gray">AI코딩</span>
             <span class="badge badge-gray">확장프로그램</span>
             <span class="badge badge-gray">코드편집</span>
           </div>
-          <div class="divider" style="margin-bottom:16px;"></div>
+          <div class="divider" style="margin-top:auto;margin-bottom:16px;"></div>
           <a href="https://code.visualstudio.com" target="_blank" style="font-size:14px;font-weight:600;color:#2552B5;display:flex;align-items:center;gap:4px;text-decoration:none;letter-spacing:-0.224px;" onmouseover="this.style.color='#1e42a0'" onmouseout="this.style.color='#2552B5'">
             서비스 바로가기
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -732,9 +715,9 @@
           </button>
           <div class="tip-body" style="display:none;padding:0 24px 22px;padding-left:62px;">
             <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:14px;letter-spacing:-0.224px;">"10년 경력의 마케터처럼 답해줘"처럼 역할을 먼저 정의하면 훨씬 전문적이고 상황에 맞는 답변이 나옵니다. AI는 역할에 따라 사용하는 어휘, 깊이, 관점이 달라집니다.</p>
-            <div style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#475569;line-height:1.7;">
-              <span style="color:#94a3b8;"># 예시 프롬프트</span><br>
-              <span style="color:#2552B5;">당신은 B2B SaaS 마케팅 10년 경력의 전문가입니다.</span><br>
+            <div style="background:#1e3a6e;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#e2eeff;line-height:1.7;">
+              <span style="color:#93c5fd;"># 예시 프롬프트</span><br>
+              <span style="color:#60a5fa;font-weight:600;">당신은 B2B SaaS 마케팅 10년 경력의 전문가입니다.</span><br>
               우리 제품의 LinkedIn 광고 문구 3가지를 작성해주세요.
             </div>
           </div>
@@ -750,10 +733,10 @@
           </button>
           <div class="tip-body" style="display:none;padding:0 24px 22px;padding-left:62px;">
             <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:14px;letter-spacing:-0.224px;">"3개 항목으로", "표 형식으로", "300자 이내로"처럼 형식을 명시하면 바로 복사해서 쓸 수 있는 결과물이 나옵니다.</p>
-            <div style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#475569;line-height:1.7;">
-              <span style="color:#94a3b8;"># 형식 지정 예시</span><br>
-              아래 내용을 <span style="color:#16a34a;">불릿 포인트 5개</span>로, <span style="color:#16a34a;">각 항목 50자 이내</span>로 요약해줘.<br>
-              <span style="color:#16a34a;">표 형식</span>으로 정리하되 열은 항목/설명/우선순위로 구성해줘.
+            <div style="background:#1e3a6e;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#e2eeff;line-height:1.7;">
+              <span style="color:#93c5fd;"># 형식 지정 예시</span><br>
+              아래 내용을 <span style="color:#86efac;font-weight:600;">불릿 포인트 5개</span>로, <span style="color:#86efac;font-weight:600;">각 항목 50자 이내</span>로 요약해줘.<br>
+              <span style="color:#86efac;font-weight:600;">표 형식</span>으로 정리하되 열은 항목/설명/우선순위로 구성해줘.
             </div>
           </div>
         </div>
@@ -768,12 +751,12 @@
           </button>
           <div class="tip-body" style="display:none;padding:0 24px 22px;padding-left:62px;">
             <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:14px;letter-spacing:-0.224px;">"이메일 써줘"보다 "B2B 고객 대상, 계약 갱신 독려 목적, 정중하고 간결하게, 200자 내외"처럼 상황을 설명할수록 정확한 결과가 나옵니다.</p>
-            <div style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#475569;line-height:1.7;">
-              <span style="color:#94a3b8;"># 좋은 프롬프트 = 역할 + 상황 + 과제 + 형식</span><br>
-              <span style="color:#2552B5;">[역할]</span> 10년 경력 B2B 영업 전문가<br>
-              <span style="color:#16a34a;">[상황]</span> HR SaaS 솔루션 판매, 중소기업 대상<br>
-              <span style="color:#7c3aed;">[과제]</span> 신규 리드 첫 콜드 이메일 작성<br>
-              <span style="color:#ea580c;">[형식]</span> 제목 1줄 + 본문 150자 + CTA 1개, 3가지 버전
+            <div style="background:#1e3a6e;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#e2eeff;line-height:1.7;">
+              <span style="color:#93c5fd;"># 좋은 프롬프트 = 역할 + 상황 + 과제 + 형식</span><br>
+              <span style="color:#60a5fa;font-weight:600;">[역할]</span> 10년 경력 B2B 영업 전문가<br>
+              <span style="color:#86efac;font-weight:600;">[상황]</span> HR SaaS 솔루션 판매, 중소기업 대상<br>
+              <span style="color:#c4b5fd;font-weight:600;">[과제]</span> 신규 리드 첫 콜드 이메일 작성<br>
+              <span style="color:#fdba74;font-weight:600;">[형식]</span> 제목 1줄 + 본문 150자 + CTA 1개, 3가지 버전
             </div>
           </div>
         </div>
@@ -788,25 +771,38 @@
           </button>
           <div class="tip-body" style="display:none;padding:0 24px 22px;padding-left:62px;">
             <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:14px;letter-spacing:-0.224px;">첫 답변에 만족하지 말고 이어서 수정 요청하세요. "더 간결하게", "공격적인 마케팅 톤으로"처럼 피드백하면 점점 원하는 결과가 됩니다.</p>
-            <div style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#475569;line-height:1.7;">
-              <span style="color:#94a3b8;"># 이어서 수정하는 방법</span><br>
-              → "더 짧게 줄여줘" (절반 길이로)<br>
-              → "2번 버전을 더 부드러운 톤으로 바꿔줘"<br>
-              → "수치를 더 강조하고 감정적 표현 줄여줘"
+            <div style="background:#1e3a6e;border-radius:10px;padding:14px;font-family:monospace;font-size:14px;color:#e2eeff;line-height:1.7;">
+              <span style="color:#93c5fd;"># 이어서 수정하는 방법</span><br>
+              → <span style="color:#86efac;">"더 짧게 줄여줘"</span> (절반 길이로)<br>
+              → <span style="color:#86efac;">"2번 버전을 더 부드러운 톤으로 바꿔줘"</span><br>
+              → <span style="color:#86efac;">"수치를 더 강조하고 감정적 표현 줄여줘"</span>
             </div>
           </div>
         </div>
 
-        <div class="card fade-up delay-4">
+        <div class="card fade-up delay-4" style="border-color:#fbbf24;">
           <button onclick="toggleTip(this)" style="width:100%;text-align:left;padding:20px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-family:inherit;">
-            <div style="display:flex;align-items:center;gap:14px;">
-              <span style="font-size:13px;font-weight:600;color:#2552B5;min-width:24px;letter-spacing:0.04em;">05</span>
-              <span style="font-weight:600;color:#0f172a;font-size:17px;letter-spacing:-0.374px;">중요한 사실은 반드시 검증하기</span>
+            <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
+              <span style="font-size:13px;font-weight:700;color:#d97706;min-width:24px;letter-spacing:0.04em;">05</span>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-weight:600;color:#0f172a;font-size:17px;letter-spacing:-0.374px;">중요한 사실은 반드시 검증하기</span>
+                <span style="font-size:12px;font-weight:700;color:#d97706;background:#fef3c7;border:1px solid #fbbf24;padding:2px 8px;border-radius:20px;letter-spacing:0.02em;">⚠ 할루시네이션 주의</span>
+              </div>
             </div>
             <svg class="tip-arrow" style="width:16px;height:16px;color:#94a3b8;flex-shrink:0;transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="tip-body" style="display:none;padding:0 24px 22px;padding-left:62px;">
-            <p style="color:#475569;font-size:15px;line-height:1.6;letter-spacing:-0.224px;">AI는 틀린 정보를 자신 있게 말하기도 합니다 (할루시네이션). 수치, 통계, 법률 정보, 인용문은 반드시 원본 출처를 확인하세요. AI는 초안 도구이지 최종 검증 도구가 아닙니다.</p>
+            <p style="color:#475569;font-size:15px;line-height:1.6;margin-bottom:14px;letter-spacing:-0.224px;">AI는 틀린 정보를 자신감 있게 말하기도 합니다. 이를 <strong style="color:#0f172a;">할루시네이션(Hallucination)</strong>이라고 하며, 확인 없이 그대로 공유하거나 보고서에 사용하면 심각한 오류로 이어질 수 있습니다.</p>
+            <div style="background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:16px 18px;">
+              <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:12px;letter-spacing:0.02em;">⚠ 이렇게 사용하면 위험합니다</div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#78350f;line-height:1.6;"><span style="color:#d97706;font-weight:700;flex-shrink:0;">•</span>AI는 업무 <strong style="color:#92400e;">보조 도구</strong>입니다. 최종 검토·승인은 담당자가 직접 수행해야 합니다.</div>
+                <div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#78350f;line-height:1.6;"><span style="color:#d97706;font-weight:700;flex-shrink:0;">•</span>AI 답변을 그대로 외부에 전달하거나 보고서에 사용하지 마세요.</div>
+                <div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#78350f;line-height:1.6;"><span style="color:#d97706;font-weight:700;flex-shrink:0;">•</span>중요한 결정에 AI 답변을 <strong style="color:#92400e;">단독 근거</strong>로 사용하지 마십시오.</div>
+                <div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#78350f;line-height:1.6;"><span style="color:#d97706;font-weight:700;flex-shrink:0;">•</span><strong style="color:#92400e;">수치·법령·정책 정보</strong>는 반드시 원본 자료와 대조 확인하세요.</div>
+                <div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#92400e;font-weight:600;line-height:1.6;padding-top:8px;border-top:1px solid #fde68a;"><span style="flex-shrink:0;">→</span>AI가 확신 있게 말해도 틀릴 수 있습니다. 최종 판단은 항상 사람이 합니다.</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -839,6 +835,21 @@
       </div>
 
     </div>
+
+    <!-- ── AI 사용 시 유의사항 배너 ── -->
+    <div style="margin-top:28px;background:#fffbeb;border:2px solid #f59e0b;border-radius:14px;padding:22px 28px;" class="fade-up">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="width:30px;height:30px;background:#f59e0b;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg style="width:16px;height:16px;" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h3 style="font-weight:700;color:#92400e;font-size:16px;letter-spacing:-0.374px;margin:0;">AI 도구 사용 시 유의사항</h3>
+        <span style="font-size:12px;color:#d97706;background:#fef3c7;border:1px solid #fbbf24;padding:2px 8px;border-radius:20px;font-weight:600;margin-left:auto;letter-spacing:0.02em;">할루시네이션 주의</span>
+      </div>
+      <div style="padding:12px 16px;background:#d97706;border-radius:8px;font-size:14px;color:white;font-weight:600;letter-spacing:-0.224px;text-align:center;">
+        AI가 확신 있게 말해도 틀릴 수 있습니다. 그대로 사용하지 말고 최종 판단 및 검토는 반드시 담당자가 직접 합니다.
+      </div>
+    </div>
+
     </div><!-- tips-section-basic -->
 
     <div id="tips-section-projects" class="tips-section" style="display:none;">
@@ -952,7 +963,7 @@
               <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               복사 가능
             </button>
-            <div style="font-size:11px;font-weight:700;color:#2552B5;letter-spacing:0.08em;margin-bottom:16px;">CUSTOM INSTRUCTIONS 예시</div>
+            <div style="font-size:11px;font-weight:700;color:#2552B5;letter-spacing:0.08em;margin-bottom:16px;">CUSTOM INSTRUCTIONS 예시 1</div>
             <div style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;font-size:14px;line-height:2;font-family:monospace;color:#475569;">
               <span style="color:#94a3b8;"># 저는 중견기업 마케팅팀 3년차 대리입니다.</span><br><br>
               <span style="color:#2552B5;font-weight:700;">## 답변 규칙</span><br>
@@ -980,6 +991,45 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Custom Instructions 예시 2 — 빈 양식 -->
+        <div class="card" style="padding:24px;margin-bottom:28px;position:relative;">
+          <button onclick="copyPromptCard(this)" data-prompt="# 저는 [회사유형] [직무] [경력]입니다.
+
+## 답변 규칙
+- 모든 답변은 [존댓말/반말]로 작성해주세요.
+- [비교·분석]이 들어가면 [표/불릿] 형식을 우선 사용해주세요.
+- 보고서 초안은 서론-본론-결론 구조로 작성해주세요.
+
+## 말투
+- [과장 표현] 사용 금지
+- 구체적 수치는 반드시 본문에 녹여주세요.
+
+## 자주 하는 작업
+1. [주요 업무 1]
+2. [주요 업무 2]
+3. [주요 업무 3]" style="position:absolute;top:20px;right:20px;display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:9999px;border:1px solid #2552B5;background:transparent;color:#2552B5;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:all 0.15s;" onmouseover="this.style.background='#eff1fb'" onmouseout="this.style.background='transparent'">
+            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            복사 가능
+          </button>
+          <div style="font-size:11px;font-weight:700;color:#2552B5;letter-spacing:0.08em;margin-bottom:4px;">CUSTOM INSTRUCTIONS 예시 2 — 빈 양식</div>
+          <p style="font-size:13px;color:#94a3b8;margin-bottom:14px;letter-spacing:-0.224px;">[ ] 안을 내 직무에 맞게 수정하세요</p>
+          <pre style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;font-size:14px;color:#475569;line-height:1.9;font-family:monospace;white-space:pre-wrap;margin:0;"># 저는 [회사유형] [직무] [경력]입니다.
+
+## 답변 규칙
+- 모든 답변은 [존댓말/반말]로 작성해주세요.
+- [비교·분석]이 들어가면 [표/불릿] 형식을 우선 사용해주세요.
+- 보고서 초안은 서론-본론-결론 구조로 작성해주세요.
+
+## 말투
+- [과장 표현] 사용 금지
+- 구체적 수치는 반드시 본문에 녹여주세요.
+
+## 자주 하는 작업
+1. [주요 업무 1]
+2. [주요 업무 2]
+3. [주요 업무 3]</pre>
         </div>
 
         <!-- 용도별 패턴 3가지 -->
@@ -1130,7 +1180,7 @@
 [보고 내용]:
 
 조건:
-- 결론 먼저 (BLUF 방식)
+- 결론 먼저 (두괄식)
 - 핵심 수치 반드시 포함
 - 총 300자 이내
 - 불릿 포인트 형식" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:9999px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#475569;font-family:inherit;transition:all 0.1s;" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background='#fff'">
@@ -1145,7 +1195,7 @@
 [보고 내용]:
 
 조건:
-- 결론 먼저 (BLUF 방식)
+- 결론 먼저 (두괄식)
 - 핵심 수치 반드시 포함
 - 총 300자 이내
 - 불릿 포인트 형식</pre>
@@ -1299,72 +1349,6 @@
 - 추가로 검토해볼 사항</pre>
         </div>
 
-        <!-- 프롬프트 카드 7 -->
-        <div class="card" style="padding:22px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span class="badge badge-blue">Projects</span>
-              <span class="badge badge-green">Claude</span>
-            </div>
-            <button onclick="copyPromptCard(this)" data-prompt="# 저는 중견기업 마케팅팀 3년차 대리입니다.
-
-## 답변 규칙
-- 모든 답변은 존댓말로 작성해주세요.
-- 비교·분석이 들어가면 표 형식을 우선 사용해주세요.
-- 보고서 초안은 서론-본론-결론 구조로 작성해주세요.
-
-## 말투
-- 과장 표현(&quot;혁신적&quot;, &quot;게임체인저&quot;) 사용 금지
-- 구체적 수치는 반드시 본문에 녹여주세요.
-
-## 자주 하는 작업
-1. 주간 캠페인 성과 보고서 초안
-2. 고객 인터뷰 요약
-3. 경쟁사 신상품 분석" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:9999px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#475569;font-family:inherit;transition:all 0.1s;" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background='#fff'">
-              <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-              복사
-            </button>
-          </div>
-          <div style="font-weight:600;color:#0f172a;font-size:15px;margin-bottom:10px;letter-spacing:-0.374px;">Custom Instructions — 업무용 템플릿</div>
-          <pre style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:13px;color:#475569;line-height:1.7;white-space:pre-wrap;font-family:inherit;margin:0;"># 저는 중견기업 마케팅팀 3년차 대리입니다.
-
-## 답변 규칙
-- 모든 답변은 존댓말로 작성해주세요.
-- 비교·분석이 들어가면 표 형식을 우선 사용해주세요.
-- 보고서 초안은 서론-본론-결론 구조로 작성해주세요.
-
-## 말투
-- 과장 표현("혁신적", "게임체인저") 사용 금지
-- 구체적 수치는 반드시 본문에 녹여주세요.
-
-## 자주 하는 작업
-1. 주간 캠페인 성과 보고서 초안
-2. 고객 인터뷰 요약
-3. 경쟁사 신상품 분석</pre>
-        </div>
-
-        <!-- 프롬프트 카드 8 -->
-        <div class="card" style="padding:22px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span class="badge badge-orange">마케팅</span>
-              <span class="badge badge-green">Claude</span>
-            </div>
-            <button onclick="copyPromptCard(this)" data-prompt="경쟁사 A사 신상품 기사를 붙여넣고 → 우리 대응 메모 3줄로 정리해줘.
-
-[기사 내용]:
-" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:9999px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#475569;font-family:inherit;transition:all 0.1s;" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background='#fff'">
-              <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-              복사
-            </button>
-          </div>
-          <div style="font-weight:600;color:#0f172a;font-size:15px;margin-bottom:10px;letter-spacing:-0.374px;">경쟁사 대응 메모 (Projects 업무용)</div>
-          <pre style="background:#f5f7ff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;font-size:13px;color:#475569;line-height:1.7;white-space:pre-wrap;font-family:inherit;margin:0;">경쟁사 A사 신상품 기사를 붙여넣고
-→ 우리 대응 메모 3줄로 정리해줘.
-
-[기사 내용]:
-</pre>
-        </div>
 
       </div>
     </div>
