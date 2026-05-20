@@ -1190,7 +1190,7 @@
           <h1 class="section-title">커뮤니티</h1>
           <p class="section-desc desc-light">자유롭게 소통하고 질문하세요. AI에 대한 궁금증을 동료와 함께 해결해보세요.</p>
         </div>
-        <button onclick="openForumModal()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;gap:6px;">
+        <button onclick="openForumWrite()" class="btn-primary" style="flex-shrink:0;align-self:flex-end;gap:6px;">
           <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
           글 작성하기
         </button>
@@ -1224,6 +1224,55 @@
           목록으로
         </button>
         <div class="card" id="forum-post-detail" style="padding:36px;"></div>
+      </div>
+
+      <!-- ── 글쓰기 뷰 ── -->
+      <div id="forum-write-view" style="display:none;">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:32px;">
+          <button onclick="closeForumWrite()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9999px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:#475569;font-family:inherit;transition:all 0.1s;" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background='#fff'">
+            <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            목록으로
+          </button>
+          <h1 style="font-size:22px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;">커뮤니티 글 작성</h1>
+        </div>
+        <div class="card" style="padding:40px;max-width:720px;">
+          <p style="font-size:15px;color:#64748b;margin-bottom:28px;letter-spacing:-0.374px;">자유롭게 소통하고 질문해보세요.</p>
+          <!-- 작성자 정보 (자동) -->
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:20px;">
+            <div id="fw-user-initial" style="width:36px;height:36px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#2552B5;flex-shrink:0;">나</div>
+            <div>
+              <div id="fw-user-name" style="font-weight:600;color:#0f172a;font-size:15px;letter-spacing:-0.374px;">-</div>
+              <div id="fw-user-dept" style="font-size:13px;color:#64748b;margin-top:2px;">-</div>
+            </div>
+            <span style="margin-left:auto;font-size:12px;color:#94a3b8;">로그인 계정으로 자동 등록</span>
+          </div>
+          <form onsubmit="submitForumPost(event)" style="display:flex;flex-direction:column;gap:20px;">
+            <div>
+              <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:8px;letter-spacing:-0.224px;">글 유형</label>
+              <div style="display:flex;gap:8px;">
+                <label id="fw-type-free-label" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #2552B5;border-radius:9999px;cursor:pointer;font-size:14px;color:#2552B5;background:#eff6ff;transition:all 0.1s;">
+                  <input type="radio" name="fw-type" value="free" checked onchange="updateFwTypeStyle()" style="accent-color:#2552B5;"> 자유글
+                </label>
+                <label id="fw-type-question-label" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e2e8f0;border-radius:9999px;cursor:pointer;font-size:14px;color:#475569;transition:all 0.1s;">
+                  <input type="radio" name="fw-type" value="question" onchange="updateFwTypeStyle()" style="accent-color:#2552B5;"> 질문
+                </label>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">제목</label>
+              <input type="text" placeholder="제목을 입력하세요" class="input" id="fw-title" required>
+            </div>
+            <div>
+              <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">내용</label>
+              <textarea class="input" style="min-height:220px;resize:vertical;" placeholder="자유롭게 소통하고 질문해보세요." id="fw-content" required></textarea>
+            </div>
+            <div id="fw-error" style="display:none;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:14px;color:#dc2626;"></div>
+            <div style="display:flex;gap:12px;padding-top:4px;">
+              <button type="button" onclick="closeForumWrite()" class="btn-ghost" style="flex:1;justify-content:center;">취소</button>
+              <button type="submit" id="fw-submit-btn" class="btn-primary" style="flex:2;justify-content:center;">등록하기</button>
+            </div>
+          </form>
+        </div>
       </div>
 
     </div>
@@ -1499,6 +1548,7 @@ function navigate(pageId) {
   if (pageId === 'forum') {
     document.getElementById('forum-list-view').style.display = 'block';
     document.getElementById('forum-detail-view').style.display = 'none';
+    document.getElementById('forum-write-view').style.display = 'none';
   }
   // 스크롤 맨 위로
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1950,25 +2000,7 @@ async function loadForumComments(postId) {
   if (!el) return;
   const { data, error } = await sb.from('forum_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
   if (error) { el.innerHTML = '<div style="padding:16px 0;color:#94a3b8;font-size:14px;">댓글을 불러올 수 없습니다.</div>'; return; }
-  if (!data || data.length === 0) {
-    el.innerHTML = '<div style="padding:16px 0;text-align:center;color:#94a3b8;font-size:14px;">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>';
-    return;
-  }
-  el.innerHTML = data.map((c, i) => {
-    const d = new Date(c.created_at);
-    const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const isLast = i === data.length - 1;
-    return `
-      <div style="padding:16px 0;${isLast ? '' : 'border-bottom:1px solid #f1f5f9;'}">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="width:28px;height:28px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#2552B5;flex-shrink:0;">${(c.author_name||'익명').charAt(0)}</div>
-          <span style="font-weight:600;color:#0f172a;font-size:14px;">${c.author_name||'익명'}</span>
-          ${c.department ? `<span style="font-size:13px;color:#94a3b8;">· ${c.department}</span>` : ''}
-          <span style="font-size:12px;color:#cbd5e1;margin-left:auto;">${dateStr}</span>
-        </div>
-        <div style="font-size:15px;color:#374151;line-height:1.6;padding-left:36px;letter-spacing:-0.374px;">${c.content}</div>
-      </div>`;
-  }).join('');
+  renderCommentThread(data, `forum-comments-list-${postId}`, postId, 'forum');
 }
 
 async function submitForumComment(postId) {
@@ -2158,25 +2190,7 @@ async function loadComments(postId) {
   if (!el) return;
   const { data, error } = await sb.from('post_comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
   if (error) { el.innerHTML = '<div style="padding:16px 0;color:#94a3b8;font-size:14px;">댓글을 불러올 수 없습니다.</div>'; return; }
-  if (!data || data.length === 0) {
-    el.innerHTML = '<div style="padding:16px 0;text-align:center;color:#94a3b8;font-size:14px;">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>';
-    return;
-  }
-  el.innerHTML = data.map((c, i) => {
-    const d = new Date(c.created_at);
-    const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const isLast = i === data.length - 1;
-    return `
-      <div style="padding:16px 0;${isLast ? '' : 'border-bottom:1px solid #f1f5f9;'}">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="width:28px;height:28px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#2552B5;flex-shrink:0;">${(c.author_name||'익명').charAt(0)}</div>
-          <span style="font-weight:600;color:#0f172a;font-size:14px;">${c.author_name||'익명'}</span>
-          ${c.department ? `<span style="font-size:13px;color:#94a3b8;">· ${c.department}</span>` : ''}
-          <span style="font-size:12px;color:#cbd5e1;margin-left:auto;">${dateStr}</span>
-        </div>
-        <div style="font-size:15px;color:#374151;line-height:1.6;padding-left:36px;letter-spacing:-0.374px;">${c.content}</div>
-      </div>`;
-  }).join('');
+  renderCommentThread(data, `comments-list-${postId}`, postId, 'community');
 }
 
 async function submitComment(postId) {
@@ -2288,6 +2302,152 @@ function searchCommunity(q) {
     (p.content||'').toLowerCase().includes(keyword)
   );
   renderCommunityBoard(filtered);
+}
+
+// ── 커뮤니티(포럼) 글쓰기 뷰 ──
+function openForumWrite() {
+  if (!currentUser) { openAuth('login'); return; }
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-forum').classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === 'forum');
+  });
+  document.getElementById('forum-list-view').style.display = 'none';
+  document.getElementById('forum-detail-view').style.display = 'none';
+  document.getElementById('forum-write-view').style.display = 'block';
+  window.scrollTo(0, 0);
+  const initial = (currentUser.name || '나').charAt(0).toUpperCase();
+  document.getElementById('fw-user-initial').textContent = initial;
+  document.getElementById('fw-user-name').textContent = currentUser.name || '-';
+  document.getElementById('fw-user-dept').textContent = currentUser.department || '부서 미설정';
+}
+
+function closeForumWrite() {
+  document.getElementById('forum-write-view').style.display = 'none';
+  document.getElementById('forum-list-view').style.display = 'block';
+}
+
+function updateFwTypeStyle() {
+  const free = document.querySelector('input[name="fw-type"][value="free"]').checked;
+  document.getElementById('fw-type-free-label').style.cssText = free
+    ? 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #2552B5;border-radius:9999px;cursor:pointer;font-size:14px;color:#2552B5;background:#eff6ff;transition:all 0.1s;'
+    : 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e2e8f0;border-radius:9999px;cursor:pointer;font-size:14px;color:#475569;transition:all 0.1s;';
+  document.getElementById('fw-type-question-label').style.cssText = !free
+    ? 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #2552B5;border-radius:9999px;cursor:pointer;font-size:14px;color:#2552B5;background:#eff6ff;transition:all 0.1s;'
+    : 'display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e2e8f0;border-radius:9999px;cursor:pointer;font-size:14px;color:#475569;transition:all 0.1s;';
+}
+
+async function submitForumPost(e) {
+  e.preventDefault();
+  if (!currentUser) { openAuth('login'); return; }
+  const title   = document.getElementById('fw-title').value.trim();
+  const content = document.getElementById('fw-content').value.trim();
+  const type    = document.querySelector('input[name="fw-type"]:checked').value;
+  const errEl   = document.getElementById('fw-error');
+  const btn     = document.getElementById('fw-submit-btn');
+  errEl.style.display = 'none';
+  btn.textContent = '등록 중...'; btn.disabled = true;
+  const { error } = await sb.from('forum_posts').insert([{
+    title, content,
+    post_type: type,
+    author_name: currentUser.name,
+    department: currentUser.department || '',
+  }]);
+  btn.textContent = '등록하기'; btn.disabled = false;
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  e.target.reset();
+  showToast('글이 등록됐습니다!');
+  closeForumWrite();
+  await loadForumPosts();
+}
+
+// ── 대댓글 렌더링 ──
+function renderCommentThread(data, containerId, postId, tableType) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div style="padding:16px 0;text-align:center;color:#94a3b8;font-size:14px;">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>';
+    return;
+  }
+  const topLevel = data.filter(c => !c.parent_id);
+  const replies  = data.filter(c =>  c.parent_id);
+
+  el.innerHTML = topLevel.map((c, i) => {
+    const isLast = i === topLevel.length - 1;
+    const children = replies.filter(r => r.parent_id === c.id);
+    const d = new Date(c.created_at);
+    const dateStr = `${String(d.getFullYear()).slice(2)}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+    const childrenHtml = children.map(r => {
+      const rd = new Date(r.created_at);
+      const rdStr = `${String(rd.getFullYear()).slice(2)}-${String(rd.getMonth()+1).padStart(2,'0')}-${String(rd.getDate()).padStart(2,'0')}`;
+      return `
+        <div style="display:flex;gap:10px;padding:12px 0 4px 36px;border-top:1px solid #f1f5f9;">
+          <div style="color:#94a3b8;font-size:14px;margin-top:2px;flex-shrink:0;">↳</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <div style="width:24px;height:24px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#16a34a;flex-shrink:0;">${(r.author_name||'익명').charAt(0)}</div>
+              <span style="font-weight:600;color:#0f172a;font-size:13px;">${r.author_name||'익명'}</span>
+              ${r.department ? `<span style="font-size:12px;color:#94a3b8;">· ${r.department}</span>` : ''}
+              <span style="font-size:11px;color:#cbd5e1;margin-left:auto;">${rdStr}</span>
+            </div>
+            <div style="font-size:14px;color:#374151;line-height:1.6;letter-spacing:-0.374px;">${r.content}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div style="padding:16px 0;${isLast && !children.length ? '' : 'border-bottom:1px solid #f1f5f9;'}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#2552B5;flex-shrink:0;">${(c.author_name||'익명').charAt(0)}</div>
+          <span style="font-weight:600;color:#0f172a;font-size:14px;">${c.author_name||'익명'}</span>
+          ${c.department ? `<span style="font-size:13px;color:#94a3b8;">· ${c.department}</span>` : ''}
+          <span style="font-size:12px;color:#cbd5e1;margin-left:auto;">${dateStr}</span>
+        </div>
+        <div style="font-size:15px;color:#374151;line-height:1.6;padding-left:36px;letter-spacing:-0.374px;">${c.content}</div>
+        <div style="padding-left:36px;margin-top:8px;">
+          <button onclick="toggleReplyForm('${c.id}','${postId}','${tableType}')" style="font-size:12px;color:#64748b;background:none;border:none;cursor:pointer;font-family:inherit;padding:2px 0;letter-spacing:-0.224px;">답글 달기</button>
+        </div>
+        <div id="reply-form-${c.id}" style="display:none;padding:10px 0 0 36px;">
+          <textarea id="reply-input-${c.id}" class="input" placeholder="답글을 입력하세요..." style="min-height:60px;resize:none;font-size:14px;" rows="2"></textarea>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">
+            <button onclick="toggleReplyForm('${c.id}','${postId}','${tableType}')" style="font-size:13px;color:#94a3b8;background:none;border:none;cursor:pointer;font-family:inherit;">취소</button>
+            <button onclick="submitReply('${c.id}','${postId}','${tableType}')" class="btn-primary" style="font-size:13px;padding:6px 16px;">등록</button>
+          </div>
+        </div>
+        ${childrenHtml}
+      </div>`;
+  }).join('');
+}
+
+function toggleReplyForm(commentId, postId, tableType) {
+  const form = document.getElementById(`reply-form-${commentId}`);
+  if (!form) return;
+  const isHidden = form.style.display === 'none';
+  if (isHidden && !currentUser) { openAuth('login'); return; }
+  form.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) document.getElementById(`reply-input-${commentId}`)?.focus();
+}
+
+async function submitReply(parentId, postId, tableType) {
+  if (!currentUser) { openAuth('login'); return; }
+  const input = document.getElementById(`reply-input-${parentId}`);
+  const content = (input?.value || '').trim();
+  if (!content) { showToast('답글 내용을 입력해주세요.'); return; }
+  const table = tableType === 'forum' ? 'forum_comments' : 'post_comments';
+  const { error } = await sb.from(table).insert({
+    post_id: postId,
+    parent_id: parentId,
+    author_name: currentUser.name || '익명',
+    department: currentUser.department || '',
+    content,
+  });
+  if (error) { showToast('답글 등록 중 오류가 발생했습니다.'); return; }
+  input.value = '';
+  showToast('답글이 등록됐습니다.');
+  const containerId = tableType === 'forum' ? `forum-comments-list-${postId}` : `comments-list-${postId}`;
+  const { data } = await sb.from(table).select('*').eq('post_id', postId).order('created_at', { ascending: true });
+  renderCommentThread(data, containerId, postId, tableType);
 }
 
 // ── 커뮤니티 글쓰기 뷰 ──
