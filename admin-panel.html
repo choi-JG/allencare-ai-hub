@@ -181,6 +181,7 @@
     <div style="display:flex; gap:4px; margin-bottom:24px; background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:10px; padding:4px; width:fit-content;">
       <button class="admin-tab active" id="tab-posts" onclick="switchTab('posts')">사례 관리</button>
       <button class="admin-tab" id="tab-users" onclick="switchTab('users')">회원 관리</button>
+      <button class="admin-tab" id="tab-forum" onclick="switchTab('forum')">커뮤니티 관리</button>
     </div>
 
     <!-- ══ 사례 관리 섹션 ══ -->
@@ -303,6 +304,61 @@
 
     </div> <!-- /section-users -->
 
+    <!-- ══ 커뮤니티 관리 섹션 ══ -->
+    <div id="section-forum" style="display:none;">
+
+      <!-- 통계 -->
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px;">
+        <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">전체 글</div>
+          <div id="fstat-total" style="font-size:2rem; font-weight:800; color:#93C5FD;">—</div>
+        </div>
+        <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">오늘 등록</div>
+          <div id="fstat-today" style="font-size:2rem; font-weight:800; color:#6EE7B7;">—</div>
+        </div>
+        <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; padding:20px 24px;">
+          <div style="font-size:0.72rem; font-weight:700; color:#475569; letter-spacing:0.08em; margin-bottom:8px;">이번 주 등록</div>
+          <div id="fstat-week" style="font-size:2rem; font-weight:800; color:#C4B5FD;">—</div>
+        </div>
+      </div>
+
+      <!-- 검색 & 새로고침 -->
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+        <input id="forum-search" type="text" class="input" style="max-width:280px;" placeholder="제목, 작성자 검색..." oninput="filterForumPosts()">
+        <button onclick="loadForumPosts()" class="btn-primary" style="padding:9px 16px; margin-left:auto;">
+          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          새로고침
+        </button>
+      </div>
+
+      <!-- 테이블 -->
+      <div style="background:#0F172A; border:1px solid rgba(37,82,181,0.12); border-radius:12px; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid rgba(37,82,181,0.1); display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.875rem; font-weight:700; color:#F1F5F9;">커뮤니티 게시글 목록</span>
+          <span id="forum-post-count" style="font-size:0.78rem; color:#475569;"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>부서</th>
+                <th>카테고리</th>
+                <th>등록일</th>
+                <th style="text-align:center;">삭제</th>
+              </tr>
+            </thead>
+            <tbody id="forum-tbody">
+              <tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div> <!-- /section-forum -->
+
   </div>
 </div>
 
@@ -330,6 +386,23 @@
       <div style="display:flex; justify-content:flex-end;">
         <button onclick="closePwResetModal()" class="btn-primary" style="padding:9px 20px;">확인</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 커뮤니티 글 삭제 확인 모달 ══ -->
+<div id="forum-delete-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="margin-bottom:20px;">
+      <div style="font-size:1.1rem; font-weight:700; color:#F1F5F9; margin-bottom:6px;">커뮤니티 글 삭제</div>
+      <div id="forum-delete-modal-title" style="font-size:0.85rem; color:#64748B; line-height:1.5;"></div>
+    </div>
+    <p style="font-size:0.83rem; color:#94A3B8; margin-bottom:24px; padding:12px 14px; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.15); border-radius:8px;">
+      삭제 후 복구가 불가능합니다. 정말 삭제하시겠습니까?
+    </p>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="closeForumDeleteModal()" style="padding:9px 20px; border-radius:8px; background:none; border:1px solid #1E293B; color:#64748B; font-size:0.875rem; cursor:pointer; font-family:inherit; transition:all 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1E293B'">취소</button>
+      <button id="forum-delete-confirm-btn" onclick="confirmForumDelete()" style="padding:9px 20px; border-radius:8px; background:#EF4444; border:none; color:#fff; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit; transition:background 0.2s;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">삭제</button>
     </div>
   </div>
 </div>
@@ -712,11 +785,96 @@ async function confirmUserDelete() {
 let activeTab = 'posts';
 function switchTab(tab) {
   activeTab = tab;
-  document.getElementById('section-posts').style.display = tab === 'posts' ? 'block' : 'none';
-  document.getElementById('section-users').style.display = tab === 'users' ? 'block' : 'none';
+  document.getElementById('section-posts').style.display  = tab === 'posts'  ? 'block' : 'none';
+  document.getElementById('section-users').style.display  = tab === 'users'  ? 'block' : 'none';
+  document.getElementById('section-forum').style.display  = tab === 'forum'  ? 'block' : 'none';
   document.getElementById('tab-posts').classList.toggle('active', tab === 'posts');
   document.getElementById('tab-users').classList.toggle('active', tab === 'users');
+  document.getElementById('tab-forum').classList.toggle('active', tab === 'forum');
   if (tab === 'users' && allUsers.length === 0) loadUsers();
+  if (tab === 'forum' && allForumPosts.length === 0) loadForumPosts();
+}
+
+// ── 커뮤니티 관리 ──
+let allForumPosts = [];
+let pendingForumDeleteId = null;
+
+async function loadForumPosts() {
+  const tbody = document.getElementById('forum-tbody');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>';
+
+  const { data, error } = await sb.from('forum_posts').select('*').order('created_at', { ascending: false });
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">오류: ${error.message}</td></tr>`; return; }
+
+  allForumPosts = data || [];
+
+  // 통계
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
+  document.getElementById('fstat-total').textContent = allForumPosts.length;
+  document.getElementById('fstat-today').textContent = allForumPosts.filter(p => new Date(p.created_at) >= today).length;
+  document.getElementById('fstat-week').textContent  = allForumPosts.filter(p => new Date(p.created_at) >= weekAgo).length;
+
+  renderForumPosts(allForumPosts);
+}
+
+function renderForumPosts(posts) {
+  const tbody = document.getElementById('forum-tbody');
+  document.getElementById('forum-post-count').textContent = `총 ${posts.length}건`;
+  if (!posts.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">게시글이 없습니다.</td></tr>'; return; }
+  tbody.innerHTML = posts.map(post => {
+    const date = new Date(post.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' });
+    const preview = escHtml((post.content||'').substring(0,40)) + ((post.content||'').length > 40 ? '…' : '');
+    const cat = post.category ? `<span style="padding:2px 8px;border-radius:99px;background:rgba(37,82,181,0.15);border:1px solid rgba(37,82,181,0.25);color:#93C5FD;font-size:0.72rem;">${escHtml(post.category)}</span>` : '<span style="color:#334155;font-size:0.75rem;">—</span>';
+    return `<tr>
+      <td>
+        <div style="font-weight:600;color:#F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;" title="${escHtml(post.title||'')}">${escHtml(post.title||'(제목 없음)')}</div>
+        <div style="font-size:0.75rem;color:#475569;margin-top:2px;">${preview}</div>
+      </td>
+      <td style="color:#94A3B8;white-space:nowrap;">${escHtml(post.author_name||'익명')}</td>
+      <td style="color:#64748B;white-space:nowrap;">${escHtml(post.department||'—')}</td>
+      <td>${cat}</td>
+      <td style="color:#475569;white-space:nowrap;">${date}</td>
+      <td style="text-align:center;">
+        <button onclick="openForumDeleteModal('${post.id}','${escHtml(post.title||'')}')"
+          style="padding:5px 12px;border-radius:6px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#EF4444;font-size:0.78rem;cursor:pointer;font-family:inherit;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(239,68,68,0.18)'" onmouseout="this.style.background='rgba(239,68,68,0.08)'">삭제</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterForumPosts() {
+  const q = document.getElementById('forum-search').value.toLowerCase();
+  const filtered = allForumPosts.filter(p =>
+    !q || (p.title||'').toLowerCase().includes(q) || (p.author_name||'').toLowerCase().includes(q)
+  );
+  renderForumPosts(filtered);
+}
+
+function openForumDeleteModal(id, title) {
+  pendingForumDeleteId = id;
+  document.getElementById('forum-delete-modal-title').textContent = `"${title}"`;
+  document.getElementById('forum-delete-modal').classList.add('open');
+}
+
+function closeForumDeleteModal() {
+  pendingForumDeleteId = null;
+  document.getElementById('forum-delete-modal').classList.remove('open');
+}
+
+async function confirmForumDelete() {
+  if (!pendingForumDeleteId) return;
+  const btn = document.getElementById('forum-delete-confirm-btn');
+  btn.textContent = '삭제 중...'; btn.disabled = true;
+
+  const { error } = await sb.from('forum_posts').delete().eq('id', pendingForumDeleteId);
+  btn.textContent = '삭제'; btn.disabled = false;
+
+  if (error) { showToast('삭제 실패: ' + error.message); return; }
+  closeForumDeleteModal();
+  showToast('게시글이 삭제되었습니다.');
+  await loadForumPosts();
 }
 
 // ── 회원 로드 ──
