@@ -288,6 +288,7 @@
               <div style="font-size:12px;color:#94a3b8;margin-top:2px;" id="user-email-display"></div>
             </div>
             <button onclick="navigate('community');toggleUserMenu()" style="width:100%;text-align:left;padding:8px 12px;border-radius:8px;background:none;border:none;cursor:pointer;font-size:14px;color:#475569;font-family:inherit;transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">내 공유 사례</button>
+            <button onclick="openProfileSettings();toggleUserMenu()" style="width:100%;text-align:left;padding:8px 12px;border-radius:8px;background:none;border:none;cursor:pointer;font-size:14px;color:#475569;font-family:inherit;transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">프로필 설정</button>
             <button onclick="logout()" style="width:100%;text-align:left;padding:8px 12px;border-radius:8px;background:none;border:none;cursor:pointer;font-size:14px;color:#ef4444;font-family:inherit;transition:background 0.1s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">로그아웃</button>
           </div>
         </div>
@@ -1744,6 +1745,61 @@
 
 
 <!-- ══════════════════════════════════
+     모달: 프로필 설정
+══════════════════════════════════ -->
+<div id="profile-modal" class="modal-overlay" onclick="if(event.target===this)closeProfileSettings()">
+  <div class="modal-box" style="max-width:440px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <h2 style="font-size:20px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;">프로필 설정</h2>
+      <button onclick="closeProfileSettings()" style="background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;border-radius:6px;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+        <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- 현재 정보 표시 -->
+    <div style="background:#f5f7ff;border-radius:12px;padding:14px 16px;margin-bottom:24px;">
+      <div style="font-size:13px;color:#64748b;margin-bottom:2px;">현재 계정</div>
+      <div style="font-size:15px;font-weight:600;color:#0f172a;" id="profile-name-display"></div>
+      <div style="font-size:13px;color:#94a3b8;margin-top:2px;" id="profile-email-display"></div>
+    </div>
+
+    <!-- 부서명 변경 -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:12px;">부서명 변경</div>
+      <form id="form-update-dept" onsubmit="handleUpdateDept(event)" style="display:flex;flex-direction:column;gap:10px;">
+        <input id="new-dept" class="input" type="text" placeholder="새 부서명" maxlength="50">
+        <div id="dept-error" style="display:none;font-size:13px;color:#ef4444;"></div>
+        <button type="submit" class="btn-primary" style="font-size:15px;padding:10px 0;justify-content:center;" id="btn-update-dept">부서명 저장</button>
+      </form>
+    </div>
+
+    <div style="height:1px;background:#e2e8f0;margin-bottom:24px;"></div>
+
+    <!-- 비밀번호 변경 -->
+    <div>
+      <div style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:12px;">비밀번호 변경</div>
+      <form id="form-update-pw" onsubmit="handleUpdatePassword(event)" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="position:relative;">
+          <input id="new-pw" class="input" type="password" placeholder="새 비밀번호 (8자 이상)" style="padding-right:44px;">
+          <button type="button" onclick="togglePw('new-pw')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:0;">
+            <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+        <div style="position:relative;">
+          <input id="new-pw-confirm" class="input" type="password" placeholder="새 비밀번호 확인" style="padding-right:44px;">
+          <button type="button" onclick="togglePw('new-pw-confirm')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:0;">
+            <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+        <div id="pw-update-error" style="display:none;font-size:13px;color:#ef4444;"></div>
+        <button type="submit" class="btn-primary" style="font-size:15px;padding:10px 0;justify-content:center;" id="btn-update-pw">비밀번호 변경</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
      모달: 로그인 / 회원가입
 ══════════════════════════════════ -->
 <div id="auth-modal" class="modal-overlay" onclick="if(event.target===this)closeAuth()">
@@ -2171,6 +2227,59 @@ document.addEventListener('click', (e) => {
     if (m) m.style.display = 'none';
   }
 });
+
+// ── 프로필 설정 모달 ──
+function openProfileSettings() {
+  const modal = document.getElementById('profile-modal');
+  if (!currentUser) return;
+  document.getElementById('profile-name-display').textContent = currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+  document.getElementById('profile-email-display').textContent = currentUser.email;
+  const dept = currentUser.user_metadata?.department || '';
+  document.getElementById('new-dept').value = dept;
+  document.getElementById('dept-error').style.display = 'none';
+  document.getElementById('pw-update-error').style.display = 'none';
+  document.getElementById('new-pw').value = '';
+  document.getElementById('new-pw-confirm').value = '';
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProfileSettings() {
+  document.getElementById('profile-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+async function handleUpdateDept(e) {
+  e.preventDefault();
+  const dept = document.getElementById('new-dept').value.trim();
+  const errEl = document.getElementById('dept-error');
+  const btn = document.getElementById('btn-update-dept');
+  errEl.style.display = 'none';
+  if (!dept) { errEl.textContent = '부서명을 입력해주세요.'; errEl.style.display = 'block'; return; }
+  btn.textContent = '저장 중...'; btn.disabled = true;
+  const { data, error } = await sb.auth.updateUser({ data: { department: dept } });
+  btn.textContent = '부서명 저장'; btn.disabled = false;
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  currentUser = data.user;
+  closeProfileSettings();
+  showToast('부서명이 변경되었습니다.');
+}
+
+async function handleUpdatePassword(e) {
+  e.preventDefault();
+  const pw = document.getElementById('new-pw').value;
+  const pw2 = document.getElementById('new-pw-confirm').value;
+  const errEl = document.getElementById('pw-update-error');
+  const btn = document.getElementById('btn-update-pw');
+  errEl.style.display = 'none';
+  if (pw.length < 8) { errEl.textContent = '비밀번호는 8자 이상이어야 합니다.'; errEl.style.display = 'block'; return; }
+  if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; errEl.style.display = 'block'; return; }
+  btn.textContent = '변경 중...'; btn.disabled = true;
+  const { error } = await sb.auth.updateUser({ password: pw });
+  btn.textContent = '비밀번호 변경'; btn.disabled = false;
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  closeProfileSettings();
+  showToast('비밀번호가 변경되었습니다.');
+}
 
 // ── 비밀번호 보이기/숨기기 ──
 function togglePw(id) {
