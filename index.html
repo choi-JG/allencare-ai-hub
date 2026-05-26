@@ -1767,7 +1767,14 @@
     <div style="margin-bottom:28px;">
       <div style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:12px;">부서명 변경</div>
       <form id="form-update-dept" onsubmit="handleUpdateDept(event)" style="display:flex;flex-direction:column;gap:10px;">
-        <input id="new-dept" class="input" type="text" placeholder="새 부서명" maxlength="50">
+        <select id="new-dept" class="input">
+          <option value="">부서를 선택하세요</option>
+          <option>임원</option>
+          <option>고객지원팀</option>
+          <option>의약품사업팀</option>
+          <option>진료재료운영팀</option>
+          <option>경영관리팀</option>
+        </select>
         <div id="dept-error" style="display:none;font-size:13px;color:#ef4444;"></div>
         <button type="submit" class="btn-primary" style="font-size:15px;padding:10px 0;justify-content:center;" id="btn-update-dept">부서명 저장</button>
       </form>
@@ -2254,7 +2261,7 @@ async function handleUpdateDept(e) {
   const errEl = document.getElementById('dept-error');
   const btn = document.getElementById('btn-update-dept');
   errEl.style.display = 'none';
-  if (!dept) { errEl.textContent = '부서명을 입력해주세요.'; errEl.style.display = 'block'; return; }
+  if (!dept) { errEl.textContent = '부서를 선택해주세요.'; errEl.style.display = 'block'; return; }
   btn.textContent = '저장 중...'; btn.disabled = true;
   const { data, error } = await sb.auth.updateUser({ data: { department: dept } });
   btn.textContent = '부서명 저장'; btn.disabled = false;
