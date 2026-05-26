@@ -581,28 +581,18 @@ async function confirmDelete() {
   const btn = document.getElementById('delete-confirm-btn');
   btn.textContent = '삭제 중...'; btn.disabled = true;
 
-  try {
-    const res = await fetch('/api/admin-delete', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminPassword}`,
-      },
-      body: JSON.stringify({ id: pendingDeleteId }),
-    });
-
-    if (!res.ok) {
-      showToast('삭제 중 오류가 발생했습니다.');
-    } else {
-      closeDeleteModal();
-      showToast('사례가 삭제되었습니다.');
-      await loadPosts();
-    }
-  } catch {
-    showToast('네트워크 오류가 발생했습니다.');
-  }
+  const { error } = await sb.from('posts').delete().eq('id', pendingDeleteId);
 
   btn.textContent = '삭제'; btn.disabled = false;
+
+  if (error) {
+    showToast('삭제 실패: ' + error.message);
+    return;
+  }
+
+  closeDeleteModal();
+  showToast('사례가 삭제되었습니다.');
+  await loadPosts();
 }
 
 // ── 토스트 ──
