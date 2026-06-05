@@ -11,6 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script src="https://unpkg.com/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -3106,6 +3107,7 @@ function openCommunityWrite() {
   document.getElementById('cw-user-dept').textContent = currentUser.department || '부서 미설정';
   // Quill 에디터 초기화 (최초 1회)
   if (!cwQuill) {
+    Quill.register('modules/imageResize', ImageResize);
     cwQuill = new Quill('#cw-editor', {
       theme: 'snow',
       placeholder: '어떤 상황에서, 어떻게 AI를 활용했고, 어떤 효과가 있었는지 자유롭게 써주세요.\n이미지는 툴바의 이미지 버튼 또는 캡처 후 붙여넣기(Ctrl+V)로 삽입할 수 있습니다.',
@@ -3118,6 +3120,7 @@ function openCommunityWrite() {
           ['link', 'image'],
           ['clean']
         ],
+        imageResize: { parchment: Quill.import('parchment') },
         clipboard: { matchVisual: false }
       }
     });
@@ -3137,85 +3140,12 @@ function openCommunityWrite() {
         }
       }
     });
-    // 이미지 클릭 시 크기 조절 바 표시
-    cwQuill.root.addEventListener('click', function(e) {
-      if (e.target.tagName === 'IMG') {
-        showImgResizeBar(e.target);
-      } else {
-        hideImgResizeBar();
-      }
-    });
   } else {
     cwQuill.setContents([]);
   }
 }
 
-// ── 이미지 크기 조절 바 ──
-let _imgResizeBar = null;
-let _imgResizeTarget = null;
-
-function showImgResizeBar(img) {
-  hideImgResizeBar();
-  _imgResizeTarget = img;
-  const bar = document.createElement('div');
-  _imgResizeBar = bar;
-  bar.style.cssText = 'position:fixed;background:#1e293b;border-radius:10px;padding:6px 10px;display:flex;gap:6px;align-items:center;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25);font-family:inherit;';
-
-  const label = document.createElement('span');
-  label.textContent = '이미지 크기:';
-  label.style.cssText = 'color:#94a3b8;font-size:12px;margin-right:2px;white-space:nowrap;';
-  bar.appendChild(label);
-
-  [['25%','25%'], ['50%','50%'], ['75%','75%'], ['원본','100%']].forEach(([text, val]) => {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    btn.style.cssText = 'background:rgba(255,255,255,0.12);border:none;color:#e2e8f0;font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;transition:background 0.1s;';
-    btn.onmouseover = () => btn.style.background = '#2552B5';
-    btn.onmouseout  = () => btn.style.background = 'rgba(255,255,255,0.12)';
-    btn.onclick = (ev) => {
-      ev.stopPropagation();
-      img.style.width = val;
-      img.style.height = 'auto';
-      positionBar(bar, img);
-    };
-    bar.appendChild(btn);
-  });
-
-  document.body.appendChild(bar);
-  positionBar(bar, img);
-
-  document.addEventListener('keydown', onEscHideBar);
-  document.addEventListener('click', onOutsideHideBar, true);
-}
-
-function positionBar(bar, img) {
-  const rect = img.getBoundingClientRect();
-  const barH = 40;
-  let top = rect.top - barH - 6;
-  if (top < 8) top = rect.bottom + 6;
-  let left = rect.left;
-  const maxLeft = window.innerWidth - 300;
-  if (left > maxLeft) left = maxLeft;
-  bar.style.top  = top  + 'px';
-  bar.style.left = left + 'px';
-}
-
-function hideImgResizeBar() {
-  if (_imgResizeBar) { _imgResizeBar.remove(); _imgResizeBar = null; }
-  _imgResizeTarget = null;
-  document.removeEventListener('keydown', onEscHideBar);
-  document.removeEventListener('click', onOutsideHideBar, true);
-}
-
-function onEscHideBar(e) { if (e.key === 'Escape') hideImgResizeBar(); }
-function onOutsideHideBar(e) {
-  if (_imgResizeBar && !_imgResizeBar.contains(e.target) && e.target !== _imgResizeTarget) {
-    hideImgResizeBar();
-  }
-}
-
 function closeCommunityWrite() {
-  hideImgResizeBar();
   document.getElementById('community-write-view').style.display = 'none';
   document.getElementById('community-list-view').style.display = 'block';
 }
