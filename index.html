@@ -11,7 +11,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-  <script src="https://unpkg.com/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -3107,10 +3106,12 @@ function openCommunityWrite() {
   document.getElementById('cw-user-dept').textContent = currentUser.department || '부서 미설정';
   // Quill 에디터 초기화 (최초 1회)
   if (!cwQuill) {
-    Quill.register('modules/imageResize', ImageResize);
+    // 혹시 이전 Quill 잔재 제거 후 초기화
+    const editorEl = document.getElementById('cw-editor');
+    editorEl.innerHTML = '';
     cwQuill = new Quill('#cw-editor', {
       theme: 'snow',
-      placeholder: '어떤 상황에서, 어떻게 AI를 활용했고, 어떤 효과가 있었는지 자유롭게 써주세요.\n이미지는 툴바의 이미지 버튼 또는 캡처 후 붙여넣기(Ctrl+V)로 삽입할 수 있습니다.',
+      placeholder: '어떤 상황에서, 어떻게 AI를 활용했고, 어떤 효과가 있었는지 자유롭게 써주세요.\n이미지는 툴바의 이미지 버튼 또는 Ctrl+V 붙여넣기로 삽입할 수 있습니다.',
       modules: {
         toolbar: [
           ['bold', 'italic', 'underline', 'strike'],
@@ -3120,7 +3121,6 @@ function openCommunityWrite() {
           ['link', 'image'],
           ['clean']
         ],
-        imageResize: { parchment: Quill.import('parchment') },
         clipboard: { matchVisual: false }
       }
     });
@@ -3140,12 +3140,75 @@ function openCommunityWrite() {
         }
       }
     });
+    // 이미지 클릭 시 드래그 리사이즈 핸들 표시
+    cwQuill.root.addEventListener('click', function(e) {
+      if (e.target.tagName === 'IMG') showRzHandle(e.target);
+      else if (!e.target.closest('#rz-handle')) hideRzHandle();
+    });
   } else {
     cwQuill.setContents([]);
   }
 }
 
+// ── 이미지 드래그 리사이즈 ──
+let _rzImg = null, _rzHandle = null;
+let _rzStartX = 0, _rzStartW = 0;
+
+function showRzHandle(img) {
+  hideRzHandle();
+  _rzImg = img;
+  const h = document.createElement('div');
+  h.id = 'rz-handle';
+  h.style.cssText = [
+    'position:fixed', 'width:14px', 'height:14px',
+    'background:#2552B5', 'border:2px solid #fff',
+    'border-radius:3px', 'cursor:se-resize', 'z-index:9999',
+    'box-shadow:0 1px 5px rgba(0,0,0,0.35)'
+  ].join(';');
+  document.body.appendChild(h);
+  _rzHandle = h;
+  posRzHandle();
+  h.addEventListener('mousedown', onRzDown);
+  window.addEventListener('scroll', posRzHandle, true);
+  window.addEventListener('resize', posRzHandle);
+}
+
+function posRzHandle() {
+  if (!_rzImg || !_rzHandle) return;
+  const r = _rzImg.getBoundingClientRect();
+  _rzHandle.style.left = (r.right  - 7) + 'px';
+  _rzHandle.style.top  = (r.bottom - 7) + 'px';
+}
+
+function hideRzHandle() {
+  if (_rzHandle) { _rzHandle.remove(); _rzHandle = null; }
+  _rzImg = null;
+  window.removeEventListener('scroll', posRzHandle, true);
+  window.removeEventListener('resize', posRzHandle);
+}
+
+function onRzDown(e) {
+  e.preventDefault();
+  _rzStartX = e.clientX;
+  _rzStartW = _rzImg.getBoundingClientRect().width;
+  document.addEventListener('mousemove', onRzMove);
+  document.addEventListener('mouseup',   onRzUp);
+}
+
+function onRzMove(e) {
+  const newW = Math.max(40, _rzStartW + (e.clientX - _rzStartX));
+  _rzImg.style.width  = newW + 'px';
+  _rzImg.style.height = 'auto';
+  posRzHandle();
+}
+
+function onRzUp() {
+  document.removeEventListener('mousemove', onRzMove);
+  document.removeEventListener('mouseup',   onRzUp);
+}
+
 function closeCommunityWrite() {
+  hideRzHandle();
   document.getElementById('community-write-view').style.display = 'none';
   document.getElementById('community-list-view').style.display = 'block';
 }
