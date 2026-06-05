@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -131,6 +133,14 @@
     .input:focus { border-color: #2552B5; }
     .input::placeholder { color: #94a3b8; }
     select.input { cursor: pointer; }
+
+    /* ── Quill 에디터 스타일 ── */
+    #cw-editor { border: 1px solid rgba(0,0,0,0.1); border-radius: 0 0 8px 8px; }
+    #cw-editor .ql-editor { min-height: 300px; font-size: 15px; font-family: 'Inter', -apple-system, sans-serif; color: #0f172a; line-height: 1.7; }
+    #cw-editor .ql-editor.ql-blank::before { color: #94a3b8; font-style: normal; }
+    #cw-editor .ql-editor img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
+    .ql-toolbar.ql-snow { border: 1px solid rgba(0,0,0,0.1); border-bottom: none; border-radius: 8px 8px 0 0; background: #f8fafc; }
+    .ql-container.ql-snow { border: none; }
 
     /* ── 버튼 ── */
     .btn-primary {
@@ -1465,7 +1475,7 @@
           </button>
           <h1 style="font-size:22px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;">AI 활용 사례 공유</h1>
         </div>
-        <div class="card" style="padding:40px;max-width:720px;">
+        <div class="card" style="padding:40px;">
           <p style="font-size:15px;color:#64748b;margin-bottom:28px;letter-spacing:-0.374px;">동료들에게 도움이 될 경험을 나눠주세요. 작은 팁도 큰 도움이 됩니다.</p>
           <!-- 작성자 정보 (자동) -->
           <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:4px;">
@@ -1493,7 +1503,7 @@
             </div>
             <div>
               <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">활용 내용 및 결과</label>
-              <textarea class="input" style="min-height:220px;resize:vertical;" placeholder="어떤 상황에서, 어떻게 AI를 활용했고, 어떤 효과가 있었는지 자유롭게 써주세요." id="cw-content" required></textarea>
+              <div id="cw-editor" style="min-height:300px;font-size:15px;font-family:'Inter',-apple-system,sans-serif;border-radius:0 0 8px 8px;"></div>
             </div>
             <div id="cw-error" style="display:none;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:14px;color:#dc2626;"></div>
             <div style="display:flex;gap:12px;padding-top:4px;">
@@ -2597,7 +2607,7 @@ function showForumDetail(postId) {
       </div>
     </div>
     <div style="height:1px;background:#e2e8f0;margin-bottom:28px;"></div>
-    <div style="font-size:17px;color:#1e293b;line-height:1.8;letter-spacing:-0.374px;white-space:pre-wrap;">${post.content}</div>
+    <div class="ql-snow"><div class="ql-editor" style="font-size:17px;color:#1e293b;line-height:1.8;letter-spacing:-0.374px;padding:0;">${post.content}</div></div>
     <div style="margin-top:40px;">
       <div style="height:1px;background:#e2e8f0;margin-bottom:28px;"></div>
       <h3 style="font-size:17px;font-weight:600;color:#0f172a;margin-bottom:20px;letter-spacing:-0.374px;">댓글</h3>
@@ -2778,7 +2788,7 @@ function showPostDetail(postId) {
       </div>
     </div>
     <div style="height:1px;background:#e2e8f0;margin-bottom:28px;"></div>
-    <div style="font-size:17px;color:#1e293b;line-height:1.8;letter-spacing:-0.374px;white-space:pre-wrap;">${post.content}</div>
+    <div class="ql-snow"><div class="ql-editor" style="font-size:17px;color:#1e293b;line-height:1.8;letter-spacing:-0.374px;padding:0;">${post.content}</div></div>
     <div style="height:1px;background:#e2e8f0;margin-top:40px;margin-bottom:24px;"></div>
     <div style="display:flex;align-items:center;gap:16px;">
       <button id="like-btn-${sid}" onclick="${likeOnclick}" style="${likeStyle}" onmouseover="${likeHoverIn}" onmouseout="${likeHoverOut}">
@@ -3076,6 +3086,8 @@ async function submitReply(parentId, postId, tableType) {
 }
 
 // ── 커뮤니티 글쓰기 뷰 ──
+let cwQuill = null;
+
 function openCommunityWrite() {
   if (!currentUser) { openAuth('login'); return; }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -3092,6 +3104,42 @@ function openCommunityWrite() {
   document.getElementById('cw-user-initial').textContent = initial;
   document.getElementById('cw-user-name').textContent = currentUser.name || '-';
   document.getElementById('cw-user-dept').textContent = currentUser.department || '부서 미설정';
+  // Quill 에디터 초기화 (최초 1회)
+  if (!cwQuill) {
+    cwQuill = new Quill('#cw-editor', {
+      theme: 'snow',
+      placeholder: '어떤 상황에서, 어떻게 AI를 활용했고, 어떤 효과가 있었는지 자유롭게 써주세요.\n이미지는 툴바의 이미지 버튼 또는 캡처 후 붙여넣기(Ctrl+V)로 삽입할 수 있습니다.',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ header: [1, 2, 3, false] }],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ align: [] }],
+          ['link', 'image'],
+          ['clean']
+        ],
+        clipboard: { matchVisual: false }
+      }
+    });
+    // 클립보드 이미지 붙여넣기 지원
+    cwQuill.root.addEventListener('paste', function(e) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          e.preventDefault();
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            const range = cwQuill.getSelection(true);
+            cwQuill.insertEmbed(range.index, 'image', ev.target.result, Quill.sources.USER);
+            cwQuill.setSelection(range.index + 1, Quill.sources.SILENT);
+          };
+          reader.readAsDataURL(item.getAsFile());
+        }
+      }
+    });
+  } else {
+    cwQuill.setContents([]);
+  }
 }
 
 function closeCommunityWrite() {
@@ -3111,12 +3159,19 @@ async function submitCommunityCase(e) {
   errEl.style.display = 'none';
   btn.textContent = '등록 중...'; btn.disabled = true;
 
+  const htmlContent = cwQuill ? cwQuill.root.innerHTML.trim() : '';
+  if (!htmlContent || htmlContent === '<p><br></p>') {
+    errEl.textContent = '내용을 입력해주세요.'; errEl.style.display = 'block';
+    btn.textContent = '공유하기'; btn.disabled = false;
+    return;
+  }
+
   const { error } = await sb.from('posts').insert({
     user_id:     user.id,
     author_name: currentUser.name || '익명',
     department:  currentUser.department || '',
     title:       document.getElementById('cw-title').value.trim(),
-    content:     document.getElementById('cw-content').value.trim(),
+    content:     htmlContent,
     ai_tool:     tools,
     category:    currentUser.department || '',
     likes:       0,
@@ -3125,7 +3180,8 @@ async function submitCommunityCase(e) {
   btn.textContent = '공유하기'; btn.disabled = false;
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
 
-  e.target.reset();
+  document.getElementById('cw-title').value = '';
+  if (cwQuill) cwQuill.setContents([]);
   document.querySelectorAll('#cw-tool-tags .chip').forEach(b => b.classList.remove('active'));
   showToast('사례가 등록됐습니다!');
   closeCommunityWrite();
