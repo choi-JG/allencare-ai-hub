@@ -136,7 +136,7 @@
 
     /* ── Quill 에디터 스타일 ── */
     #cw-editor { border: 1px solid rgba(0,0,0,0.1); border-radius: 0 0 8px 8px; }
-    #cw-editor .ql-editor { min-height: 300px; font-size: 15px; font-family: 'Inter', -apple-system, sans-serif; color: #0f172a; line-height: 1.7; }
+    #cw-editor .ql-editor { min-height: unset; height: 300px; overflow-y: auto; font-size: 15px; font-family: 'Inter', -apple-system, sans-serif; color: #0f172a; line-height: 1.7; }
     #cw-editor .ql-editor.ql-blank::before { color: #94a3b8; font-style: normal; }
     #cw-editor .ql-editor img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
     .ql-toolbar.ql-snow { border: 1px solid rgba(0,0,0,0.1); border-bottom: none; border-radius: 8px 8px 0 0; background: #f8fafc; }
@@ -3099,6 +3099,7 @@ function openCommunityWrite() {
   document.getElementById('community-detail-view').style.display = 'none';
   document.getElementById('community-write-view').style.display = 'block';
   window.scrollTo(0, 0);
+  fitEditorHeight();
   // 로그인 유저 정보 자동 표시
   const initial = (currentUser.name || '나').charAt(0).toUpperCase();
   document.getElementById('cw-user-initial').textContent = initial;
@@ -3145,9 +3146,24 @@ function openCommunityWrite() {
       if (e.target.tagName === 'IMG') showRzHandles(e.target);
       else if (!e.target.closest('.rz-handle')) hideRzHandles();
     });
+    fitEditorHeight();
   } else {
     cwQuill.setContents([]);
+    fitEditorHeight();
   }
+}
+
+// ── 에디터 높이: 뷰포트 꽉 채우기 ──
+function fitEditorHeight() {
+  requestAnimationFrame(() => {
+    const toolbar = document.querySelector('#cw-editor .ql-toolbar');
+    const editorInner = document.querySelector('#cw-editor .ql-editor');
+    if (!toolbar || !editorInner) return;
+    // 툴바 하단 ~ 뷰포트 하단 - 버튼 영역 + 여유
+    const reserved = 110; // 공유하기 버튼 + 하단 패딩
+    const h = Math.max(200, window.innerHeight - toolbar.getBoundingClientRect().bottom - reserved);
+    editorInner.style.height = h + 'px';
+  });
 }
 
 // ── 이미지 드래그 리사이즈 (3핸들) ──
