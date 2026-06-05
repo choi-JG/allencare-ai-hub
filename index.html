@@ -135,10 +135,10 @@
     select.input { cursor: pointer; }
 
     /* ── Quill 에디터 스타일 ── */
-    #cw-editor { border: 1px solid rgba(0,0,0,0.1); border-radius: 0 0 8px 8px; }
-    #cw-editor .ql-editor { min-height: 300px; font-size: 15px; font-family: 'Inter', -apple-system, sans-serif; color: #0f172a; line-height: 1.7; }
-    #cw-editor .ql-editor.ql-blank::before { color: #94a3b8; font-style: normal; }
-    #cw-editor .ql-editor img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
+    #cw-editor, #fw-editor { border: 1px solid rgba(0,0,0,0.1); border-radius: 0 0 8px 8px; }
+    #cw-editor .ql-editor, #fw-editor .ql-editor { min-height: 300px; font-size: 15px; font-family: 'Inter', -apple-system, sans-serif; color: #0f172a; line-height: 1.7; }
+    #cw-editor .ql-editor.ql-blank::before, #fw-editor .ql-editor.ql-blank::before { color: #94a3b8; font-style: normal; }
+    #cw-editor .ql-editor img, #fw-editor .ql-editor img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
     .ql-toolbar.ql-snow { border: 1px solid rgba(0,0,0,0.1); border-bottom: none; border-radius: 8px 8px 0 0; background: #f8fafc; }
     .ql-container.ql-snow { border: none; }
 
@@ -1576,7 +1576,7 @@
           </button>
           <h1 style="font-size:22px;font-weight:600;color:#0f172a;letter-spacing:-0.374px;">커뮤니티 글 작성</h1>
         </div>
-        <div class="card" style="padding:40px;max-width:720px;">
+        <div class="card" style="padding:40px;">
           <p style="font-size:15px;color:#64748b;margin-bottom:28px;letter-spacing:-0.374px;">자유롭게 소통하고 질문해보세요.</p>
           <!-- 작성자 정보 (자동) -->
           <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:20px;">
@@ -1605,7 +1605,7 @@
             </div>
             <div>
               <label style="font-size:14px;font-weight:600;color:#475569;display:block;margin-bottom:6px;letter-spacing:-0.224px;">내용</label>
-              <textarea class="input" style="min-height:220px;resize:vertical;" placeholder="자유롭게 소통하고 질문해보세요." id="fw-content" required></textarea>
+              <div id="fw-editor" style="font-size:15px;font-family:'Inter',-apple-system,sans-serif;border-radius:0 0 8px 8px;"></div>
             </div>
             <div id="fw-error" style="display:none;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:14px;color:#dc2626;"></div>
             <div style="display:flex;gap:12px;padding-top:4px;">
@@ -2940,6 +2940,8 @@ function searchCommunity(q) {
 }
 
 // ── 커뮤니티(포럼) 글쓰기 뷰 ──
+let fwQuill = null;
+
 function openForumWrite() {
   if (!currentUser) { openAuth('login'); return; }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2955,9 +2957,52 @@ function openForumWrite() {
   document.getElementById('fw-user-initial').textContent = initial;
   document.getElementById('fw-user-name').textContent = currentUser.name || '-';
   document.getElementById('fw-user-dept').textContent = currentUser.department || '부서 미설정';
+  if (!fwQuill) {
+    const editorEl = document.getElementById('fw-editor');
+    editorEl.innerHTML = '';
+    fwQuill = new Quill('#fw-editor', {
+      theme: 'snow',
+      placeholder: '자유롭게 소통하고 질문해보세요.\n이미지는 툴바의 이미지 버튼 또는 Ctrl+V 붙여넣기로 삽입할 수 있습니다.',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ header: [1, 2, 3, false] }],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ align: [] }],
+          ['link', 'image'],
+          ['clean']
+        ],
+        clipboard: { matchVisual: false }
+      }
+    });
+    fwQuill.root.addEventListener('paste', function(e) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          e.preventDefault();
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            const range = fwQuill.getSelection(true);
+            fwQuill.insertEmbed(range.index, 'image', ev.target.result, Quill.sources.USER);
+            fwQuill.setSelection(range.index + 1, Quill.sources.SILENT);
+          };
+          reader.readAsDataURL(item.getAsFile());
+        }
+      }
+    });
+    fwQuill.root.addEventListener('click', function(e) {
+      if (e.target.tagName === 'IMG') showRzHandles(e.target);
+      else if (!e.target.closest('.rz-handle')) hideRzHandles();
+    });
+    fitEditorHeight('fw-editor');
+  } else {
+    fwQuill.setContents([]);
+    fitEditorHeight('fw-editor');
+  }
 }
 
 function closeForumWrite() {
+  hideRzHandles();
   document.getElementById('forum-write-view').style.display = 'none';
   document.getElementById('forum-list-view').style.display = 'block';
 }
@@ -2976,21 +3021,25 @@ async function submitForumPost(e) {
   e.preventDefault();
   if (!currentUser) { openAuth('login'); return; }
   const title   = document.getElementById('fw-title').value.trim();
-  const content = document.getElementById('fw-content').value.trim();
+  const htmlContent = fwQuill ? fwQuill.root.innerHTML.trim() : '';
   const type    = document.querySelector('input[name="fw-type"]:checked').value;
   const errEl   = document.getElementById('fw-error');
   const btn     = document.getElementById('fw-submit-btn');
   errEl.style.display = 'none';
+  if (!htmlContent || htmlContent === '<p><br></p>') {
+    errEl.textContent = '내용을 입력해주세요.'; errEl.style.display = 'block'; return;
+  }
   btn.textContent = '등록 중...'; btn.disabled = true;
   const { error } = await sb.from('forum_posts').insert([{
-    title, content,
+    title, content: htmlContent,
     post_type: type,
     author_name: currentUser.name,
     department: currentUser.department || '',
   }]);
   btn.textContent = '등록하기'; btn.disabled = false;
   if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
-  e.target.reset();
+  document.getElementById('fw-title').value = '';
+  if (fwQuill) fwQuill.setContents([]);
   showToast('글이 등록됐습니다!');
   closeForumWrite();
   await loadForumPosts();
@@ -3099,7 +3148,7 @@ function openCommunityWrite() {
   document.getElementById('community-detail-view').style.display = 'none';
   document.getElementById('community-write-view').style.display = 'block';
   window.scrollTo(0, 0);
-  fitEditorHeight();
+  fitEditorHeight('cw-editor');
   // 로그인 유저 정보 자동 표시
   const initial = (currentUser.name || '나').charAt(0).toUpperCase();
   document.getElementById('cw-user-initial').textContent = initial;
@@ -3146,21 +3195,20 @@ function openCommunityWrite() {
       if (e.target.tagName === 'IMG') showRzHandles(e.target);
       else if (!e.target.closest('.rz-handle')) hideRzHandles();
     });
-    fitEditorHeight();
+    fitEditorHeight('cw-editor');
   } else {
     cwQuill.setContents([]);
-    fitEditorHeight();
+    fitEditorHeight('cw-editor');
   }
 }
 
 // ── 에디터 높이: 뷰포트 꽉 채우기 ──
-function fitEditorHeight() {
+function fitEditorHeight(editorId) {
   requestAnimationFrame(() => {
-    const toolbar = document.querySelector('#cw-editor .ql-toolbar');
-    const editorInner = document.querySelector('#cw-editor .ql-editor');
+    const toolbar = document.querySelector('#' + editorId + ' .ql-toolbar');
+    const editorInner = document.querySelector('#' + editorId + ' .ql-editor');
     if (!toolbar || !editorInner) return;
-    // 툴바 하단 ~ 뷰포트 하단 - 버튼 영역 여유
-    const reserved = 110; // 공유하기 버튼 + 하단 패딩
+    const reserved = 110;
     const h = Math.max(200, window.innerHeight - toolbar.getBoundingClientRect().bottom - reserved);
     editorInner.style.minHeight = h + 'px';
   });
